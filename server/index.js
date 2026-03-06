@@ -68,11 +68,11 @@ app.get('/services/:slug', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/dashboard/index.html'));
+  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
 });
 
 app.get('/dashboard/*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/dashboard/index.html'));
+  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
 });
 
 app.get('/admin', (req, res) => {
@@ -84,31 +84,60 @@ app.get('/admin/*', (req, res) => {
 });
 
 // Tool pages
-app.get('/tools/:tool', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/pages/tools.html'));
+app.get('/tools/credit-calculator', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/tools/credit-calculator.html'));
+});
+
+app.get('/tools/business-name', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/tools/business-name.html'));
+});
+
+app.get('/tools/funding-quiz', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/tools/funding-quiz.html'));
 });
 
 // Contact page
 app.get('/contact', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/pages/contact.html'));
+  res.sendFile(path.join(__dirname, '../public/contact.html'));
 });
 
 // Login/Register pages
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/pages/login.html'));
+  res.sendFile(path.join(__dirname, '../public/login.html'));
 });
 
 app.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/pages/register.html'));
+  res.sendFile(path.join(__dirname, '../public/register.html'));
 });
 
-// 404 handler
+// 404 handler for non-API routes
 app.use((req, res, next) => {
-  // Skip if it's an API route (will be handled after routes are loaded)
   if (req.path.startsWith('/api/')) {
     return next();
   }
-  res.status(404).sendFile(path.join(__dirname, '../public/pages/404.html'));
+  res.status(404).send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>404 - Page Not Found</title>
+      <style>
+        body { font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #f7fafc; }
+        .container { text-align: center; }
+        h1 { font-size: 6rem; color: #1a365d; margin: 0; }
+        p { color: #718096; margin: 1rem 0 2rem; }
+        a { background: #1a365d; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; }
+        a:hover { background: #2c5282; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>404</h1>
+        <p>Page not found</p>
+        <a href="/">Go Home</a>
+      </div>
+    </body>
+    </html>
+  `);
 });
 
 // Error handler

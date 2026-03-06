@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Name Checker - His Secret Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="navbar-brand">
+        <span>His Secret Vault</span>
+      </a>
+      <div class="navbar-actions">
+        <a href="/login" class="btn btn-outline btn-sm">Login</a>
+        <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" style="min-height: 40vh; padding-top: 100px;">
+    <div class="container">
+      <div class="hero-content text-center" style="max-width: 100%; margin: 0 auto;">
+        <h1>Business Name Checker</h1>
+        <p>Check if your desired business name is available before you register</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Checker Section -->
+  <section class="section">
+    <div class="container">
+      <div style="max-width: 600px; margin: 0 auto;">
+        <div class="card">
+          <div class="card-body" style="padding: 2rem;">
+            <div class="form-group">
+              <label class="form-label">Business Name</label>
+              <input type="text" id="business-name" class="form-input" placeholder="Enter your desired business name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">State</label>
+              <select id="business-state" class="form-select">
+                <option value="DE">Delaware (Recommended)</option>
+                <option value="WY">Wyoming</option>
+                <option value="NV">Nevada</option>
+                <option value="FL">Florida</option>
+                <option value="TX">Texas</option>
+                <option value="CA">California</option>
+                <option value="NY">New York</option>
+                <option value="other">Other State</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Your Email</label>
+              <input type="email" id="checker-email" class="form-input" placeholder="you@example.com" required>
+            </div>
+            <button onclick="Tools.businessNameChecker.checkName()" class="btn btn-primary btn-lg btn-block">
+              Check Availability
+            </button>
+          </div>
+        </div>
+
+        <div id="name-results" class="hidden">
+          <!-- Results render here -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border: none; padding: 0;">
+        <p>&copy; 2024 His Secret Vault. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Credit Score Calculator - His Secret Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="navbar-brand">
+        <span>His Secret Vault</span>
+      </a>
+      <div class="navbar-actions">
+        <a href="/login" class="btn btn-outline btn-sm">Login</a>
+        <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" style="min-height: 40vh; padding-top: 100px;">
+    <div class="container">
+      <div class="hero-content text-center" style="max-width: 100%; margin: 0 auto;">
+        <h1>Free Credit Score Calculator</h1>
+        <p>Get an estimate of your credit score and personalized improvement tips</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Calculator Section -->
+  <section class="section">
+    <div class="container">
+      <div id="calculator-container">
+        <!-- Quiz renders here -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border: none; padding: 0;">
+        <p>&copy; 2024 His Secret Vault. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+  <script>
+    // Initialize the credit calculator quiz
+    Tools.creditCalculator.init();
+  </script>
+</body>
+</html>
