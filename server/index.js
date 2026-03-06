@@ -53,7 +53,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Health check
+// Health check and login test
 app.get('/api/health', async (req, res) => {
   try {
     const bcrypt = require('bcryptjs');
@@ -76,6 +76,32 @@ app.get('/api/health', async (req, res) => {
     });
   } catch (error) {
     res.json({ status: 'error', message: error.message });
+  }
+});
+
+// Direct login test endpoint
+app.post('/api/test-login', async (req, res) => {
+  try {
+    const bcrypt = require('bcryptjs');
+    const { getDb } = require('./database');
+    const db = getDb();
+    const { email, password } = req.body;
+
+    const admin = db.prepare('SELECT * FROM admins WHERE email = ?').get(email);
+
+    if (!admin) {
+      return res.json({ success: false, reason: 'admin not found', emailReceived: email });
+    }
+
+    const valid = await bcrypt.compare(password, admin.password);
+    res.json({
+      success: valid,
+      reason: valid ? 'login would succeed' : 'password mismatch',
+      emailReceived: email,
+      passwordLength: password?.length
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
   }
 });
 

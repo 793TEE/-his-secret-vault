@@ -95,12 +95,18 @@ router.post('/admin/login', async (req, res) => {
     const db = getDb();
     const { email, password } = req.body;
 
+    console.log('Admin login attempt:', { email, passwordLength: password?.length });
+
     const admin = db.prepare('SELECT * FROM admins WHERE email = ?').get(email);
     if (!admin) {
+      console.log('Admin not found for email:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    console.log('Admin found, comparing password...');
     const validPassword = await bcrypt.compare(password, admin.password);
+    console.log('Password valid:', validPassword);
+
     if (!validPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
