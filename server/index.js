@@ -157,41 +157,6 @@ app.get('/register', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/register.html'));
 });
 
-// 404 handler for non-API routes
-app.use((req, res, next) => {
-  if (req.path.startsWith('/api/')) {
-    return next();
-  }
-  res.status(404).send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>404 - Page Not Found</title>
-      <style>
-        body { font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #f7fafc; }
-        .container { text-align: center; }
-        h1 { font-size: 6rem; color: #1a365d; margin: 0; }
-        p { color: #718096; margin: 1rem 0 2rem; }
-        a { background: #1a365d; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; }
-        a:hover { background: #2c5282; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>404</h1>
-        <p>Page not found</p>
-        <a href="/">Go Home</a>
-      </div>
-    </body>
-    </html>
-  `);
-});
-
-// Error handler
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
 
 // Initialize database and start server
 async function startServer() {
@@ -220,6 +185,42 @@ async function startServer() {
     app.use('/api/payments', paymentRoutes);
     app.use('/api/documents', documentRoutes);
     app.use('/api/chat', chatRoutes);
+
+    // 404 handler (must be after all routes)
+    app.use((req, res, next) => {
+      if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'Endpoint not found' });
+      }
+      res.status(404).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>404 - Page Not Found</title>
+          <style>
+            body { font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #f7fafc; }
+            .container { text-align: center; }
+            h1 { font-size: 6rem; color: #1a365d; margin: 0; }
+            p { color: #718096; margin: 1rem 0 2rem; }
+            a { background: #1a365d; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; }
+            a:hover { background: #2c5282; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>404</h1>
+            <p>Page not found</p>
+            <a href="/">Go Home</a>
+          </div>
+        </body>
+        </html>
+      `);
+    });
+
+    // Error handler
+    app.use((err, req, res, next) => {
+      console.error('Error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    });
 
     app.listen(PORT, () => {
       console.log(`His Secret Vault server running on port ${PORT}`);
