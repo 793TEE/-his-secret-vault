@@ -54,20 +54,28 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
   try {
+    const bcrypt = require('bcryptjs');
     const { getDb } = require('./database');
     const db = getDb();
-    const adminCount = db.prepare('SELECT COUNT(*) as count FROM admins').get();
-    const admin = db.prepare('SELECT email FROM admins LIMIT 1').get();
+    const admin = db.prepare('SELECT email, password FROM admins LIMIT 1').get();
+
+    // Test if password matches
+    let passwordTest = 'no admin';
+    if (admin) {
+      const matches = await bcrypt.compare('admin123', admin.password);
+      passwordTest = matches ? 'password OK' : 'password MISMATCH';
+    }
+
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
-      adminCount: adminCount?.count || 0,
-      adminEmail: admin?.email || 'none'
+      adminEmail: admin?.email || 'none',
+      passwordTest
     });
   } catch (error) {
-    res.json({ status: 'ok', timestamp: new Date().toISOString(), dbError: error.message });
+    res.json({ status: 'error', message: error.message });
   }
 });
 
