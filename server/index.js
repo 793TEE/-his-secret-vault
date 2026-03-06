@@ -55,7 +55,20 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  try {
+    const { getDb } = require('./database');
+    const db = getDb();
+    const adminCount = db.prepare('SELECT COUNT(*) as count FROM admins').get();
+    const admin = db.prepare('SELECT email FROM admins LIMIT 1').get();
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      adminCount: adminCount?.count || 0,
+      adminEmail: admin?.email || 'none'
+    });
+  } catch (error) {
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), dbError: error.message });
+  }
 });
 
 // Serve HTML pages
