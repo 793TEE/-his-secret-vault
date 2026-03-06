@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - His Secret Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="navbar-brand">
+        <span>His Secret Vault</span>
+      </a>
+      <ul class="navbar-nav">
+        <li><a href="/#services" class="nav-link">Services</a></li>
+        <li><a href="/#tools" class="nav-link">Free Tools</a></li>
+        <li><a href="/#about" class="nav-link">About</a></li>
+        <li><a href="/contact" class="nav-link active">Contact</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <a href="/login" class="btn btn-outline btn-sm">Login</a>
+        <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
+      </div>
+      <button class="mobile-menu-btn">&#9776;</button>
+    </div>
+  </nav>
+
+  <!-- Contact Hero -->
+  <section class="hero" style="min-height: 40vh; padding-top: 100px;">
+    <div class="container">
+      <div class="hero-content text-center" style="max-width: 100%; margin: 0 auto;">
+        <h1>Get in Touch</h1>
+        <p>Have questions? We're here to help you succeed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="section">
+    <div class="container">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start;">
+        <!-- Contact Form -->
+        <div>
+          <h2>Send Us a Message</h2>
+          <p style="color: var(--text-medium); margin-bottom: 2rem;">Fill out the form below and we'll get back to you within 24 hours.</p>
+
+          <form id="contact-form">
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input type="text" name="firstName" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input type="text" name="lastName" class="form-input" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" name="email" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" name="phone" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Subject</label>
+              <select name="subject" class="form-select" required>
+                <option value="">Select a topic</option>
+                <option value="business-formation">Business Formation</option>
+                <option value="credit-repair">Credit Repair</option>
+                <option value="funding">Funding Solutions</option>
+                <option value="general">General Inquiry</option>
+                <option value="support">Customer Support</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Message</label>
+              <textarea name="message" class="form-textarea" rows="5" required placeholder="How can we help you?"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
+          </form>
+        </div>
+
+        <!-- Contact Info -->
+        <div>
+          <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-body">
+              <h3>Contact Information</h3>
+              <div style="margin-top: 1.5rem;">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                  <div style="width: 50px; height: 50px; background: var(--bg-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">&#128231;</div>
+                  <div>
+                    <h5 style="margin-bottom: 0.25rem;">Email</h5>
+                    <p style="margin: 0; color: var(--text-medium);">support@hissecretvault.net</p>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                  <div style="width: 50px; height: 50px; background: var(--bg-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">&#128222;</div>
+                  <div>
+                    <h5 style="margin-bottom: 0.25rem;">Phone</h5>
+                    <p style="margin: 0; color: var(--text-medium);">(555) 123-4567</p>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                  <div style="width: 50px; height: 50px; background: var(--bg-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">&#128205;</div>
+                  <div>
+                    <h5 style="margin-bottom: 0.25rem;">Hours</h5>
+                    <p style="margin: 0; color: var(--text-medium);">Mon - Fri: 9AM - 6PM EST</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <h3>Why Choose Us?</h3>
+              <ul style="list-style: none; margin-top: 1.5rem;">
+                <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                  <span style="color: var(--accent-color); font-weight: bold;">&#10003;</span>
+                  Expert guidance from industry professionals
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                  <span style="color: var(--accent-color); font-weight: bold;">&#10003;</span>
+                  Fast turnaround on all services
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                  <span style="color: var(--accent-color); font-weight: bold;">&#10003;</span>
+                  Personalized solutions for your needs
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0;">
+                  <span style="color: var(--accent-color); font-weight: bold;">&#10003;</span>
+                  Dedicated support team
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">His Secret Vault</div>
+          <p class="footer-description">Your trusted partner for business formation, credit repair, and funding solutions.</p>
+        </div>
+        <div>
+          <h4>Services</h4>
+          <ul class="footer-links">
+            <li><a href="/services/business-formation">Business Formation</a></li>
+            <li><a href="/services/credit-repair">Credit Repair</a></li>
+            <li><a href="/services/funding">Funding Solutions</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Resources</h4>
+          <ul class="footer-links">
+            <li><a href="/tools/credit-calculator">Credit Calculator</a></li>
+            <li><a href="/tools/business-name">Name Checker</a></li>
+            <li><a href="/tools/funding-quiz">Funding Quiz</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul class="footer-links">
+            <li><a href="/#about">About Us</a></li>
+            <li><a href="/contact">Contact</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/terms">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 His Secret Vault. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

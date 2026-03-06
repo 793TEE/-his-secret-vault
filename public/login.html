@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - His Secret Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="navbar-brand">
+        <span>His Secret Vault</span>
+      </a>
+      <div class="navbar-actions">
+        <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Login Section -->
+  <section class="hero" style="min-height: 100vh; display: flex; align-items: center;">
+    <div class="container">
+      <div style="max-width: 450px; margin: 0 auto;">
+        <div class="card">
+          <div class="card-body" style="padding: 2.5rem;">
+            <div class="text-center mb-4">
+              <h2>Welcome Back</h2>
+              <p style="color: var(--text-medium);">Sign in to access your dashboard</p>
+            </div>
+
+            <form id="login-form">
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-input" placeholder="Enter your password" required>
+              </div>
+              <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="checkbox" name="remember"> Remember me
+                </label>
+                <a href="/forgot-password" style="font-size: 0.875rem;">Forgot password?</a>
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg btn-block">Sign In</button>
+            </form>
+
+            <div class="text-center mt-4">
+              <p style="color: var(--text-medium);">
+                Don't have an account? <a href="/register">Create one</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="/js/app.js"></script>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const form = e.target;
+      const email = form.email.value;
+      const password = form.password.value;
+      const submitBtn = form.querySelector('button[type="submit"]');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing in...';
+
+      try {
+        await App.login(email, password);
+        App.showAlert('Login successful!', 'success');
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
+      } catch (error) {
+        App.showAlert(error.message || 'Invalid email or password', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - His Secret Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="navbar-brand">
+        <span>His Secret Vault</span>
+      </a>
+      <ul class="navbar-nav">
+        <li><a href="/dashboard" class="nav-link active">Dashboard</a></li>
+        <li><a href="/#services" class="nav-link">Services</a></li>
+        <li><a href="/contact" class="nav-link">Support</a></li>
+      </ul>
+      <div class="navbar-actions" id="auth-buttons">
+        <button onclick="App.logout()" class="btn btn-outline btn-sm">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Dashboard -->
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="/dashboard" class="active">&#128200; Overview</a></li>
+        <li><a href="/dashboard/subscription">&#128179; My Subscription</a></li>
+        <li><a href="/dashboard/ai-tools">&#129302; AI Tools</a></li>
+        <li><a href="/dashboard/orders">&#128230; My Orders</a></li>
+        <li><a href="/dashboard/settings">&#9881; Settings</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <div class="dashboard-header">
+        <div>
+          <h1>Welcome back, <span id="user-name">User</span>!</h1>
+          <p style="color: var(--text-medium);">Here's an overview of your account</p>
+        </div>
+        <a href="/#services" class="btn btn-primary">Explore Services</a>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3 id="subscription-status">-</h3>
+          <p>Subscription Status</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="ai-modes-count">0</h3>
+          <p>AI Modes Available</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="orders-count">0</h3>
+          <p>Active Orders</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="member-since">-</h3>
+          <p>Member Since</p>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div class="card">
+          <div class="card-body">
+            <h3>Quick Actions</h3>
+            <div style="display: grid; gap: 1rem; margin-top: 1.5rem;">
+              <a href="/dashboard/ai-tools" class="btn btn-primary btn-block">Access AI Tools</a>
+              <a href="/services/business-formation" class="btn btn-outline btn-block">Start Business Formation</a>
+              <a href="/services/credit-repair" class="btn btn-outline btn-block">Start Credit Repair</a>
+              <a href="/contact" class="btn btn-outline btn-block">Contact Support</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h3>Your Subscription</h3>
+            <div id="subscription-info" style="margin-top: 1.5rem;">
+              <p style="color: var(--text-medium);">Loading subscription details...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Orders -->
+      <div class="card">
+        <div class="card-body">
+          <h3>Recent Orders</h3>
+          <div id="recent-orders" style="margin-top: 1.5rem;">
+            <p style="color: var(--text-medium);">Loading orders...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    // Check authentication
+    if (!App.token) {
+      window.location.href = '/login';
+    }
+
+    // Load dashboard data
+    async function loadDashboard() {
+      try {
+        // Get user info
+        const user = await App.api('/auth/me');
+        document.getElementById('user-name').textContent = user.name ? user.name.split(' ')[0] : 'User';
+        document.getElementById('member-since').textContent = App.formatDate(user.created_at);
+
+        // Get subscription
+        try {
+          const subscription = await App.api('/subscriptions/me');
+          if (subscription && subscription.status === 'active') {
+            document.getElementById('subscription-status').textContent = 'Active';
+            document.getElementById('subscription-status').style.color = 'var(--accent-color)';
+            document.getElementById('ai-modes-count').textContent = subscription.ai_modes?.length || 0;
+
+            document.getElementById('subscription-info').innerHTML = `
+              <div style="padding: 1rem; background: rgba(56, 161, 105, 0.1); border-radius: var(--radius-md); margin-bottom: 1rem;">
+                <strong>${subscription.plan_name || 'Subscription'}</strong>
+                <p style="margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--text-medium);">
+                  Next billing: ${App.formatDate(subscription.current_period_end)}
+                </p>
+              </div>
+              <a href="/dashboard/subscription" class="btn btn-outline btn-block">Manage Subscription</a>
+            `;
+          } else {
+            document.getElementById('subscription-status').textContent = 'None';
+            document.getElementById('subscription-info').innerHTML = `
+              <p style="color: var(--text-medium); margin-bottom: 1rem;">
+                Subscribe to access our AI-powered business tools and resources.
+              </p>
+              <a href="/#services" class="btn btn-primary btn-block">View Plans</a>
+            `;
+          }
+        } catch (e) {
+          document.getElementById('subscription-status').textContent = 'None';
+          document.getElementById('subscription-info').innerHTML = `
+            <p style="color: var(--text-medium); margin-bottom: 1rem;">
+              Subscribe to access our AI-powered business tools.
+            </p>
+            <a href="/#services" class="btn btn-primary btn-block">View Plans</a>
+          `;
+        }
+
+        // Get orders
+        try {
+          const orders = await App.api('/orders');
+          const activeOrders = orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
+          document.getElementById('orders-count').textContent = activeOrders.length;
+
+          if (orders.length > 0) {
+            document.getElementById('recent-orders').innerHTML = `
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Service</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${orders.slice(0, 5).map(order => `
+                    <tr>
+                      <td>${order.service_name || 'Service'}</td>
+                      <td><span class="badge badge-${order.status === 'completed' ? 'success' : order.status === 'in_progress' ? 'info' : 'warning'}">${order.status}</span></td>
+                      <td>${App.formatDate(order.created_at)}</td>
+                      <td><a href="/dashboard/orders?id=${order.id}" class="btn btn-sm btn-outline">View</a></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            `;
+          } else {
+            document.getElementById('recent-orders').innerHTML = `
+              <p style="color: var(--text-medium); text-align: center; padding: 2rem;">
+                No orders yet. <a href="/#services">Browse our services</a> to get started.
+              </p>
+            `;
+          }
+        } catch (e) {
+          document.getElementById('recent-orders').innerHTML = `
+            <p style="color: var(--text-medium); text-align: center; padding: 2rem;">
+              No orders yet. <a href="/#services">Browse our services</a> to get started.
+            </p>
+          `;
+        }
+
+      } catch (error) {
+        console.error('Failed to load dashboard:', error);
+        if (error.message.includes('Invalid') || error.message.includes('expired')) {
+          App.logout();
+        }
+      }
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
