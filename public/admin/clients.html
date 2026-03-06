@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clients - Admin Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <h1>His Secret Vault</h1>
+        <span>Admin Portal</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/admin/dashboard.html" class="sidebar-link">
+          <span class="nav-icon">&#128200;</span>
+          Dashboard
+        </a>
+        <a href="/admin/clients.html" class="sidebar-link active">
+          <span class="nav-icon">&#128101;</span>
+          Clients
+        </a>
+        <a href="/admin/subscriptions.html" class="sidebar-link">
+          <span class="nav-icon">&#128179;</span>
+          Subscriptions
+        </a>
+        <a href="/admin/dfy-orders.html" class="sidebar-link">
+          <span class="nav-icon">&#128230;</span>
+          DFY Orders
+        </a>
+        <a href="/admin/plans.html" class="sidebar-link">
+          <span class="nav-icon">&#128176;</span>
+          Plans & Bundles
+        </a>
+        <a href="/admin/leads.html" class="sidebar-link">
+          <span class="nav-icon">&#127919;</span>
+          Leads
+        </a>
+        <a href="/admin/contacts.html" class="sidebar-link">
+          <span class="nav-icon">&#128236;</span>
+          Contacts
+        </a>
+        <a href="/admin/settings.html" class="sidebar-link">
+          <span class="nav-icon">&#9881;</span>
+          Settings
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <button onclick="AdminAPI.logout()" class="btn btn-outline btn-sm btn-block">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1>Client Management</h1>
+      </div>
+
+      <div class="admin-content">
+        <!-- Filters -->
+        <div class="filters-bar">
+          <input type="text" id="search-input" class="form-input" placeholder="Search by name or email..." style="max-width: 300px;">
+          <select id="status-filter" class="form-select" style="max-width: 200px;">
+            <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <button onclick="loadClients()" class="btn btn-primary btn-sm">Apply Filters</button>
+        </div>
+
+        <!-- Clients Table -->
+        <div class="content-section">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Subscription</th>
+                  <th>Total Spent</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="clients-table">
+                <tr>
+                  <td colspan="9" class="text-center">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="pagination" class="pagination"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Client Detail Modal -->
+  <div id="client-detail-modal" class="modal-overlay">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3>Client Details</h3>
+        <button class="modal-close" onclick="AdminAPI.closeModal('client-detail-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="client-detail-content">
+        <div class="loading">
+          <div class="spinner"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="AdminAPI.closeModal('client-detail-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Client Modal -->
+  <div id="edit-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Edit Client</h3>
+        <button class="modal-close" onclick="AdminAPI.closeModal('edit-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-client-form">
+          <input type="hidden" id="edit-client-id">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input type="text" id="edit-first-name" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" id="edit-last-name" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="edit-email" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" id="edit-phone" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select id="edit-status" class="form-select">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="AdminAPI.closeModal('edit-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveClient()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin/js/admin.js"></script>
+  <script>
+    AdminAPI.requireAuth();
+
+    let currentPage = 1;
+
+    async function loadClients(page = 1) {
+      currentPage = page;
+      const search = document.getElementById('search-input').value;
+      const status = document.getElementById('status-filter').value;
+
+      try {
+        const data = await AdminAPI.getClients({ search, status, page });
+
+        const html = data.clients.map(client => `
+          <tr>
+            <td>#${client.id}</td>
+            <td>${AdminAPI.escapeHtml(client.first_name)} ${AdminAPI.escapeHtml(client.last_name)}</td>
+            <td>${AdminAPI.escapeHtml(client.email)}</td>
+            <td>${AdminAPI.escapeHtml(client.phone || '-')}</td>
+            <td>
+              ${client.order_count > 0 ? `<span class="badge badge-success">Yes</span>` : `<span class="badge badge-warning">None</span>`}
+            </td>
+            <td>${AdminAPI.formatCurrency(client.total_spent)}</td>
+            <td>${AdminAPI.renderBadge(client.status)}</td>
+            <td>${AdminAPI.formatDate(client.created_at)}</td>
+            <td class="actions">
+              <button class="btn btn-sm btn-outline" onclick="viewClientDetail(${client.id})">View</button>
+              <button class="btn btn-sm btn-outline" onclick="editClient(${client.id})">Edit</button>
+            </td>
+          </tr>
+        `).join('');
+
+        document.getElementById('clients-table').innerHTML = html || '<tr><td colspan="9" class="text-center">No clients found</td></tr>';
+
+        // Render pagination
+        AdminAPI.renderPagination('pagination', data.pagination, loadClients);
+
+      } catch (error) {
+        AdminAPI.showError('Failed to load clients: ' + error.message);
+      }
+    }
+
+    async function viewClientDetail(id) {
+      try {
+        AdminAPI.openModal('client-detail-modal');
+        document.getElementById('client-detail-content').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+        const data = await AdminAPI.getClient(id);
+        const { client, subscription, accessibleModes, dfyOrders, totalSpent } = data;
+
+        let html = `
+          <div class="order-info-grid">
+            <div class="info-item">
+              <label>Client ID</label>
+              <div>#${client.id}</div>
+            </div>
+            <div class="info-item">
+              <label>Name</label>
+              <div>${AdminAPI.escapeHtml(client.first_name)} ${AdminAPI.escapeHtml(client.last_name)}</div>
+            </div>
+            <div class="info-item">
+              <label>Email</label>
+              <div>${AdminAPI.escapeHtml(client.email)}</div>
+            </div>
+            <div class="info-item">
+              <label>Phone</label>
+              <div>${client.phone || 'N/A'}</div>
+            </div>
+            <div class="info-item">
+              <label>Status</label>
+              <div>${AdminAPI.renderBadge(client.status)}</div>
+            </div>
+            <div class="info-item">
+              <label>Joined</label>
+              <div>${AdminAPI.formatDate(client.created_at)}</div>
+            </div>
+            <div class="info-item">
+              <label>Total Spent</label>
+              <div><strong>${AdminAPI.formatCurrency(totalSpent)}</strong></div>
+            </div>
+          </div>
+
+          ${subscription ? `
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--border-color);">
+              <h4 style="margin-bottom: 1rem;">Current Subscription</h4>
+              <div class="order-info-grid">
+                <div class="info-item">
+                  <label>Type</label>
+                  <div><span class="badge badge-info">${subscription.subscription_type.toUpperCase()}</span></div>
+                </div>
+                <div class="info-item">
+                  <label>Plan/Bundle</label>
+                  <div>${AdminAPI.escapeHtml(subscription.plan_name || subscription.bundle_name || 'Custom Bundle')}</div>
+                </div>
+                <div class="info-item">
+                  <label>Price</label>
+                  <div>${AdminAPI.formatCurrency(subscription.plan_price || subscription.bundle_price || 0)}/mo</div>
+                </div>
+                <div class="info-item">
+                  <label>Status</label>
+                  <div>${AdminAPI.renderBadge(subscription.status)}</div>
+                </div>
+                <div class="info-item">
+                  <label>Next Billing</label>
+                  <div>${subscription.current_period_end ? AdminAPI.formatDate(subscription.current_period_end) : 'N/A'}</div>
+                </div>
+              </div>
+              ${accessibleModes.length > 0 ? `
+                <div style="margin-top: 1rem;">
+                  <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Accessible AI Modes</label>
+                  <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    ${accessibleModes.map(mode => `<span class="badge badge-gold">${AdminAPI.escapeHtml(mode)}</span>`).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          ` : `
+            <div style="margin-top: 1.5rem; padding: 1.5rem; background: var(--bg-light); border-radius: var(--radius-md); text-align: center;">
+              <p class="text-muted">No active subscription</p>
+            </div>
+          `}
+
+          ${dfyOrders.length > 0 ? `
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--border-color);">
+              <h4 style="margin-bottom: 1rem;">Done-For-You Orders (${dfyOrders.length})</h4>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Service</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${dfyOrders.map(order => `
+                      <tr>
+                        <td>${AdminAPI.escapeHtml(order.service_name)}</td>
+                        <td>${AdminAPI.formatCurrency(order.amount)}</td>
+                        <td>${AdminAPI.renderBadge(order.status)}</td>
+                        <td>${AdminAPI.formatDate(order.created_at)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ` : ''}
+        `;
+
+        document.getElementById('client-detail-content').innerHTML = html;
+      } catch (error) {
+        AdminAPI.showError('Failed to load client details: ' + error.message);
+      }
+    }
+
+    async function editClient(id) {
+      try {
+        const data = await AdminAPI.getClient(id);
+        const client = data.client;
+
+        document.getElementById('edit-client-id').value = client.id;
+        document.getElementById('edit-first-name').value = client.first_name;
+        document.getElementById('edit-last-name').value = client.last_name;
+        document.getElementById('edit-email').value = client.email;
+        document.getElementById('edit-phone').value = client.phone || '';
+        document.getElementById('edit-status').value = client.status;
+
+        AdminAPI.openModal('edit-modal');
+      } catch (error) {
+        AdminAPI.showError('Failed to load client: ' + error.message);
+      }
+    }
+
+    async function saveClient() {
+      const id = document.getElementById('edit-client-id').value;
+      const data = {
+        firstName: document.getElementById('edit-first-name').value,
+        lastName: document.getElementById('edit-last-name').value,
+        email: document.getElementById('edit-email').value,
+        phone: document.getElementById('edit-phone').value,
+        status: document.getElementById('edit-status').value
+      };
+
+      try {
+        await AdminAPI.updateClient(id, data);
+        AdminAPI.closeModal('edit-modal');
+        AdminAPI.showSuccess('Client updated successfully');
+        loadClients(currentPage);
+      } catch (error) {
+        AdminAPI.showError('Failed to update client: ' + error.message);
+      }
+    }
+
+    loadClients();
+  </script>
+</body>
+</html>

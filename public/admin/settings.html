@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Admin | His Secret Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <h1>His Secret Vault</h1>
+        <span>Admin Portal</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/admin/dashboard.html" class="sidebar-link">
+          <span class="nav-icon">&#128200;</span>
+          Dashboard
+        </a>
+        <a href="/admin/clients.html" class="sidebar-link">
+          <span class="nav-icon">&#128101;</span>
+          Clients
+        </a>
+        <a href="/admin/subscriptions.html" class="sidebar-link">
+          <span class="nav-icon">&#128179;</span>
+          Subscriptions
+        </a>
+        <a href="/admin/dfy-orders.html" class="sidebar-link">
+          <span class="nav-icon">&#128230;</span>
+          DFY Orders
+        </a>
+        <a href="/admin/plans.html" class="sidebar-link">
+          <span class="nav-icon">&#128176;</span>
+          Plans & Bundles
+        </a>
+        <a href="/admin/leads.html" class="sidebar-link">
+          <span class="nav-icon">&#127919;</span>
+          Leads
+        </a>
+        <a href="/admin/contacts.html" class="sidebar-link">
+          <span class="nav-icon">&#128236;</span>
+          Contacts
+        </a>
+        <a href="/admin/settings.html" class="sidebar-link active">
+          <span class="nav-icon">&#9881;</span>
+          Settings
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <button onclick="AdminAPI.logout()" class="btn btn-outline btn-sm btn-block">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <h1>Account Settings</h1>
+      </header>
+
+      <div class="admin-content">
+        <!-- Profile Settings -->
+        <div class="content-section">
+          <h2>Profile Information</h2>
+          <form id="profile-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" id="admin-name" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="admin-email" class="form-input" required>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+          </form>
+        </div>
+
+        <!-- Password Change -->
+        <div class="content-section">
+          <h2>Change Password</h2>
+          <form id="password-form">
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <input type="password" id="current-password" class="form-input" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" id="new-password" class="form-input" required minlength="6">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" id="confirm-password" class="form-input" required minlength="6">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Change Password</button>
+          </form>
+        </div>
+
+        <!-- Account Info -->
+        <div class="content-section">
+          <h2>Account Information</h2>
+          <div class="order-info-grid">
+            <div class="info-item">
+              <label>Account Type</label>
+              <div id="admin-role">-</div>
+            </div>
+            <div class="info-item">
+              <label>Account ID</label>
+              <div id="admin-id">-</div>
+            </div>
+            <div class="info-item">
+              <label>Last Login</label>
+              <div id="admin-last-login">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/admin/js/admin.js"></script>
+  <script>
+    // Check auth
+    if (!AdminAPI.requireAuth()) {
+      window.location.href = '/admin/index.html';
+    }
+
+    // Load admin profile
+    async function loadProfile() {
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${AdminAPI.token}`
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to load profile');
+
+        const data = await response.json();
+
+        document.getElementById('admin-name').value = data.name || '';
+        document.getElementById('admin-email').value = data.email || '';
+        document.getElementById('admin-role').textContent = data.role || 'Admin';
+        document.getElementById('admin-id').textContent = data.id || '-';
+        document.getElementById('admin-last-login').textContent = data.last_login
+          ? AdminAPI.formatDateTime(data.last_login)
+          : 'Current session';
+
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        AdminAPI.showError('Failed to load profile');
+      }
+    }
+
+    // Update profile
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('admin-name').value;
+      const email = document.getElementById('admin-email').value;
+
+      try {
+        const response = await fetch('/api/admin/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AdminAPI.token}`
+          },
+          body: JSON.stringify({ name, email })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Update failed');
+
+        AdminAPI.showSuccess('Profile updated successfully!');
+
+      } catch (error) {
+        AdminAPI.showError(error.message);
+      }
+    });
+
+    // Change password
+    document.getElementById('password-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const currentPassword = document.getElementById('current-password').value;
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+
+      if (newPassword !== confirmPassword) {
+        AdminAPI.showError('New passwords do not match');
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        AdminAPI.showError('Password must be at least 6 characters');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/auth/change-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AdminAPI.token}`
+          },
+          body: JSON.stringify({ currentPassword, newPassword })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Password change failed');
+
+        AdminAPI.showSuccess('Password changed successfully!');
+        document.getElementById('password-form').reset();
+
+      } catch (error) {
+        AdminAPI.showError(error.message);
+      }
+    });
+
+    // Load profile on page load
+    loadProfile();
+  </script>
+</body>
+</html>

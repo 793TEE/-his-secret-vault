@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacts - Admin Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <h1>His Secret Vault</h1>
+        <span>Admin Portal</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/admin/dashboard.html" class="sidebar-link">
+          <span class="nav-icon">&#128200;</span>
+          Dashboard
+        </a>
+        <a href="/admin/clients.html" class="sidebar-link">
+          <span class="nav-icon">&#128101;</span>
+          Clients
+        </a>
+        <a href="/admin/subscriptions.html" class="sidebar-link">
+          <span class="nav-icon">&#128179;</span>
+          Subscriptions
+        </a>
+        <a href="/admin/dfy-orders.html" class="sidebar-link">
+          <span class="nav-icon">&#128230;</span>
+          DFY Orders
+        </a>
+        <a href="/admin/plans.html" class="sidebar-link">
+          <span class="nav-icon">&#128176;</span>
+          Plans & Bundles
+        </a>
+        <a href="/admin/leads.html" class="sidebar-link">
+          <span class="nav-icon">&#127919;</span>
+          Leads
+        </a>
+        <a href="/admin/contacts.html" class="sidebar-link active">
+          <span class="nav-icon">&#128236;</span>
+          Contacts
+        </a>
+        <a href="/admin/settings.html" class="sidebar-link">
+          <span class="nav-icon">&#9881;</span>
+          Settings
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <button onclick="AdminAPI.logout()" class="btn btn-outline btn-sm btn-block">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1>Contact Messages</h1>
+      </div>
+
+      <div class="admin-content">
+        <!-- Filters -->
+        <div class="filters-bar">
+          <select id="status-filter" class="form-select" style="max-width: 200px;">
+            <option value="">All Status</option>
+            <option value="new">New</option>
+            <option value="responded">Responded</option>
+          </select>
+          <button onclick="loadContacts()" class="btn btn-primary btn-sm">Apply Filters</button>
+        </div>
+
+        <!-- Contacts Table -->
+        <div class="content-section">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Message</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="contacts-table">
+                <tr>
+                  <td colspan="8" class="text-center">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="pagination" class="pagination"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Contact Detail Modal -->
+  <div id="contact-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Contact Message</h3>
+        <button class="modal-close" onclick="AdminAPI.closeModal('contact-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="contact-detail-content">
+        Loading...
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin/js/admin.js"></script>
+  <script>
+    AdminAPI.requireAuth();
+
+    let currentPage = 1;
+
+    async function loadContacts(page = 1) {
+      currentPage = page;
+      const status = document.getElementById('status-filter').value;
+
+      try {
+        const data = await AdminAPI.getContacts({ status, page });
+
+        const html = data.contacts.map(contact => `
+          <tr>
+            <td>#${contact.id}</td>
+            <td>${AdminAPI.escapeHtml(contact.name)}</td>
+            <td>${AdminAPI.escapeHtml(contact.email)}</td>
+            <td>${AdminAPI.escapeHtml(contact.phone || '-')}</td>
+            <td>${AdminAPI.truncate(AdminAPI.escapeHtml(contact.message), 50)}</td>
+            <td>${contact.status === 'responded' ? '<span class="badge badge-success">Responded</span>' : '<span class="badge badge-warning">New</span>'}</td>
+            <td>${AdminAPI.formatDate(contact.created_at)}</td>
+            <td>
+              <button class="btn btn-sm btn-outline" onclick="viewContact(${contact.id})">View</button>
+              ${contact.status !== 'responded' ? `<button class="btn btn-sm btn-primary" onclick="markResponded(${contact.id})">Mark Responded</button>` : ''}
+            </td>
+          </tr>
+        `).join('');
+
+        document.getElementById('contacts-table').innerHTML = html || '<tr><td colspan="8" class="text-center">No contacts found</td></tr>';
+
+        // Render pagination
+        AdminAPI.renderPagination('pagination', data.pagination, loadContacts);
+
+      } catch (error) {
+        AdminAPI.showError('Failed to load contacts: ' + error.message);
+      }
+    }
+
+    function viewContact(id) {
+      AdminAPI.getContacts({ page: currentPage }).then(data => {
+        const contact = data.contacts.find(c => c.id === id);
+        if (!contact) return;
+
+        const html = `
+          <div class="contact-detail">
+            <div class="info-item">
+              <label>Name</label>
+              <div>${AdminAPI.escapeHtml(contact.name)}</div>
+            </div>
+            <div class="info-item">
+              <label>Email</label>
+              <div><a href="mailto:${AdminAPI.escapeHtml(contact.email)}">${AdminAPI.escapeHtml(contact.email)}</a></div>
+            </div>
+            <div class="info-item">
+              <label>Phone</label>
+              <div>${AdminAPI.escapeHtml(contact.phone || '-')}</div>
+            </div>
+            <div class="info-item">
+              <label>Status</label>
+              <div>${contact.status === 'responded' ? '<span class="badge badge-success">Responded</span>' : '<span class="badge badge-warning">New</span>'}</div>
+            </div>
+            <div class="info-item">
+              <label>Date</label>
+              <div>${AdminAPI.formatDate(contact.created_at)}</div>
+            </div>
+            <div class="info-item" style="grid-column: 1 / -1;">
+              <label>Message</label>
+              <div style="white-space: pre-wrap; background: var(--bg-light); padding: 1rem; border-radius: 8px;">${AdminAPI.escapeHtml(contact.message)}</div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('contact-detail-content').innerHTML = html;
+        AdminAPI.openModal('contact-modal');
+      });
+    }
+
+    async function markResponded(id) {
+      if (!confirm('Mark this contact as responded?')) return;
+
+      try {
+        await AdminAPI.updateContact(id, { status: 'responded' });
+        AdminAPI.showSuccess('Contact marked as responded');
+        loadContacts(currentPage);
+      } catch (error) {
+        AdminAPI.showError('Failed to update contact: ' + error.message);
+      }
+    }
+
+    loadContacts();
+  </script>
+</body>
+</html>

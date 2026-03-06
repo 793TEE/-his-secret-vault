@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plans & Bundles - Admin Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <h1>His Secret Vault</h1>
+        <span>Admin Portal</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/admin/dashboard.html" class="sidebar-link">
+          <span class="nav-icon">&#128200;</span>
+          Dashboard
+        </a>
+        <a href="/admin/clients.html" class="sidebar-link">
+          <span class="nav-icon">&#128101;</span>
+          Clients
+        </a>
+        <a href="/admin/subscriptions.html" class="sidebar-link">
+          <span class="nav-icon">&#128179;</span>
+          Subscriptions
+        </a>
+        <a href="/admin/dfy-orders.html" class="sidebar-link">
+          <span class="nav-icon">&#128230;</span>
+          DFY Orders
+        </a>
+        <a href="/admin/plans.html" class="sidebar-link active">
+          <span class="nav-icon">&#128176;</span>
+          Plans & Bundles
+        </a>
+        <a href="/admin/leads.html" class="sidebar-link">
+          <span class="nav-icon">&#127919;</span>
+          Leads
+        </a>
+        <a href="/admin/contacts.html" class="sidebar-link">
+          <span class="nav-icon">&#128236;</span>
+          Contacts
+        </a>
+        <a href="/admin/settings.html" class="sidebar-link">
+          <span class="nav-icon">&#9881;</span>
+          Settings
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <button onclick="AdminAPI.logout()" class="btn btn-outline btn-sm btn-block">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1>Plans & Bundles</h1>
+      </div>
+
+      <div class="admin-content">
+        <!-- Subscription Plans -->
+        <div class="content-section">
+          <h2>Subscription Plans</h2>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Price</th>
+                  <th>Included Modes</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="plans-table">
+                <tr>
+                  <td colspan="5" class="text-center">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pre-Made Bundles -->
+        <div class="content-section">
+          <h2>Pre-Made Bundles</h2>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Price</th>
+                  <th>Included Modes</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bundles-table">
+                <tr>
+                  <td colspan="5" class="text-center">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Custom Bundle Pricing -->
+        <div class="content-section">
+          <h2>Custom Bundle Pricing</h2>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Mode Count</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody id="custom-pricing-table">
+                <tr>
+                  <td colspan="3" class="text-center">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- AI Modes -->
+        <div class="content-section">
+          <h2>Available AI Modes</h2>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Slug</th>
+                  <th>Description</th>
+                  <th>Free</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="modes-table">
+                <tr>
+                  <td colspan="5" class="text-center">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Edit Plan Modal -->
+  <div id="edit-plan-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Edit Plan</h3>
+        <button class="modal-close" onclick="AdminAPI.closeModal('edit-plan-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-plan-form" onsubmit="savePlan(event)">
+          <input type="hidden" name="planId" id="plan-id">
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input type="text" name="name" id="plan-name" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea name="description" id="plan-description" class="form-textarea"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Price (Monthly)</label>
+            <input type="number" name="price" id="plan-price" class="form-input" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Active</label>
+            <select name="active" id="plan-active" class="form-select">
+              <option value="1">Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Save Plan</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Bundle Modal -->
+  <div id="edit-bundle-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Edit Bundle</h3>
+        <button class="modal-close" onclick="AdminAPI.closeModal('edit-bundle-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-bundle-form" onsubmit="saveBundle(event)">
+          <input type="hidden" name="bundleId" id="bundle-id">
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input type="text" name="name" id="bundle-name" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea name="description" id="bundle-description" class="form-textarea"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Price (Monthly)</label>
+            <input type="number" name="price" id="bundle-price" class="form-input" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Active</label>
+            <select name="active" id="bundle-active" class="form-select">
+              <option value="1">Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Save Bundle</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin/js/admin.js"></script>
+  <script>
+    AdminAPI.requireAuth();
+
+    let allData = {};
+
+    async function loadPlansAndBundles() {
+      try {
+        allData = await AdminAPI.getPlans();
+
+        // Render Plans
+        const plansHtml = allData.plans.map(plan => `
+          <tr>
+            <td>
+              <strong>${AdminAPI.escapeHtml(plan.name)}</strong><br>
+              <small class="text-muted">${AdminAPI.escapeHtml(plan.description || '')}</small>
+            </td>
+            <td>${AdminAPI.formatCurrency(plan.price)}/mo</td>
+            <td>
+              <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                ${plan.included_modes.slice(0, 3).map(m => `<span class="badge badge-info">${AdminAPI.escapeHtml(m)}</span>`).join('')}
+                ${plan.included_modes.length > 3 ? `<span class="badge badge-gold">+${plan.included_modes.length - 3} more</span>` : ''}
+              </div>
+            </td>
+            <td>${plan.active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}</td>
+            <td class="actions">
+              <button class="btn btn-sm btn-outline" onclick="editPlan(${plan.id})">Edit</button>
+            </td>
+          </tr>
+        `).join('');
+        document.getElementById('plans-table').innerHTML = plansHtml || '<tr><td colspan="5" class="text-center">No plans found</td></tr>';
+
+        // Render Bundles
+        const bundlesHtml = allData.bundles.map(bundle => `
+          <tr>
+            <td>
+              <strong>${AdminAPI.escapeHtml(bundle.name)}</strong><br>
+              <small class="text-muted">${AdminAPI.escapeHtml(bundle.description || '')}</small>
+            </td>
+            <td>${AdminAPI.formatCurrency(bundle.price)}/mo</td>
+            <td>
+              <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                ${bundle.included_modes.slice(0, 3).map(m => `<span class="badge badge-info">${AdminAPI.escapeHtml(m)}</span>`).join('')}
+                ${bundle.included_modes.length > 3 ? `<span class="badge badge-gold">+${bundle.included_modes.length - 3} more</span>` : ''}
+              </div>
+            </td>
+            <td>${bundle.active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}</td>
+            <td class="actions">
+              <button class="btn btn-sm btn-outline" onclick="editBundle(${bundle.id})">Edit</button>
+            </td>
+          </tr>
+        `).join('');
+        document.getElementById('bundles-table').innerHTML = bundlesHtml || '<tr><td colspan="5" class="text-center">No bundles found</td></tr>';
+
+        // Render Custom Pricing
+        const customHtml = allData.customPricing.map(pricing => `
+          <tr>
+            <td><strong>${AdminAPI.escapeHtml(pricing.name)}</strong></td>
+            <td>${pricing.mode_count} modes</td>
+            <td>${AdminAPI.formatCurrency(pricing.price)}/mo</td>
+          </tr>
+        `).join('');
+        document.getElementById('custom-pricing-table').innerHTML = customHtml || '<tr><td colspan="3" class="text-center">No custom pricing found</td></tr>';
+
+        // Render AI Modes
+        const modesHtml = allData.aiModes.map(mode => `
+          <tr>
+            <td><strong>${AdminAPI.escapeHtml(mode.name)}</strong></td>
+            <td><code>${AdminAPI.escapeHtml(mode.slug)}</code></td>
+            <td>${AdminAPI.escapeHtml(mode.description || '')}</td>
+            <td>${mode.is_free ? '<span class="badge badge-success">Free</span>' : '<span class="badge badge-gold">Paid</span>'}</td>
+            <td>${mode.active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}</td>
+          </tr>
+        `).join('');
+        document.getElementById('modes-table').innerHTML = modesHtml || '<tr><td colspan="5" class="text-center">No modes found</td></tr>';
+
+      } catch (error) {
+        AdminAPI.showError('Failed to load plans and bundles: ' + error.message);
+      }
+    }
+
+    function editPlan(id) {
+      const plan = allData.plans.find(p => p.id === id);
+      if (!plan) return;
+
+      document.getElementById('plan-id').value = plan.id;
+      document.getElementById('plan-name').value = plan.name;
+      document.getElementById('plan-description').value = plan.description || '';
+      document.getElementById('plan-price').value = plan.price;
+      document.getElementById('plan-active').value = plan.active;
+
+      AdminAPI.openModal('edit-plan-modal');
+    }
+
+    function editBundle(id) {
+      const bundle = allData.bundles.find(b => b.id === id);
+      if (!bundle) return;
+
+      document.getElementById('bundle-id').value = bundle.id;
+      document.getElementById('bundle-name').value = bundle.name;
+      document.getElementById('bundle-description').value = bundle.description || '';
+      document.getElementById('bundle-price').value = bundle.price;
+      document.getElementById('bundle-active').value = bundle.active;
+
+      AdminAPI.openModal('edit-bundle-modal');
+    }
+
+    async function savePlan(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+
+      try {
+        await AdminAPI.updatePlan(formData.get('planId'), {
+          name: formData.get('name'),
+          description: formData.get('description'),
+          price: parseFloat(formData.get('price')),
+          active: parseInt(formData.get('active'))
+        });
+
+        AdminAPI.showSuccess('Plan updated successfully');
+        AdminAPI.closeModal('edit-plan-modal');
+        loadPlansAndBundles();
+      } catch (error) {
+        AdminAPI.showError('Failed to update plan: ' + error.message);
+      }
+    }
+
+    async function saveBundle(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+
+      try {
+        await AdminAPI.updateBundle(formData.get('bundleId'), {
+          name: formData.get('name'),
+          description: formData.get('description'),
+          price: parseFloat(formData.get('price')),
+          active: parseInt(formData.get('active'))
+        });
+
+        AdminAPI.showSuccess('Bundle updated successfully');
+        AdminAPI.closeModal('edit-bundle-modal');
+        loadPlansAndBundles();
+      } catch (error) {
+        AdminAPI.showError('Failed to update bundle: ' + error.message);
+      }
+    }
+
+    loadPlansAndBundles();
+  </script>
+</body>
+</html>

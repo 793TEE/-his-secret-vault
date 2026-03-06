@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - His Secret Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body class="admin-login-page">
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <h1>His Secret Vault</h1>
+        <h2>Admin Portal</h2>
+      </div>
+      <form id="admin-login-form" class="login-form">
+        <div class="form-group">
+          <label for="email" class="form-label">Email Address</label>
+          <input type="email" id="email" name="email" class="form-input" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" name="password" class="form-input" required>
+        </div>
+        <div id="error-message" class="alert alert-error" style="display: none;"></div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">
+          <span id="login-text">Sign In</span>
+          <span id="login-loading" style="display: none;">Signing in...</span>
+        </button>
+      </form>
+      <div class="login-footer">
+        <a href="/">Back to Main Site</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin/js/admin.js"></script>
+  <script>
+    // Check if already logged in
+    if (AdminAPI.isAuthenticated()) {
+      window.location.href = '/admin/dashboard.html';
+    }
+
+    // Handle login form
+    document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errorDiv = document.getElementById('error-message');
+      const loginText = document.getElementById('login-text');
+      const loginLoading = document.getElementById('login-loading');
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+
+      errorDiv.style.display = 'none';
+      submitBtn.disabled = true;
+      loginText.style.display = 'none';
+      loginLoading.style.display = 'inline';
+
+      try {
+        const formData = new FormData(e.target);
+        const email = formData.get('email');
+        const password = formData.get('password');
+
+        await AdminAPI.login(email, password);
+        window.location.href = '/admin/dashboard.html';
+      } catch (error) {
+        errorDiv.textContent = error.message || 'Invalid credentials';
+        errorDiv.style.display = 'block';
+        submitBtn.disabled = false;
+        loginText.style.display = 'inline';
+        loginLoading.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

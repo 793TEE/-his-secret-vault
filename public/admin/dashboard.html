@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Admin Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <h1>His Secret Vault</h1>
+        <span>Admin Portal</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/admin/dashboard.html" class="sidebar-link active">
+          <span class="nav-icon">&#128200;</span>
+          Dashboard
+        </a>
+        <a href="/admin/clients.html" class="sidebar-link">
+          <span class="nav-icon">&#128101;</span>
+          Clients
+        </a>
+        <a href="/admin/subscriptions.html" class="sidebar-link">
+          <span class="nav-icon">&#128179;</span>
+          Subscriptions
+        </a>
+        <a href="/admin/dfy-orders.html" class="sidebar-link">
+          <span class="nav-icon">&#128230;</span>
+          DFY Orders
+        </a>
+        <a href="/admin/plans.html" class="sidebar-link">
+          <span class="nav-icon">&#128176;</span>
+          Plans & Bundles
+        </a>
+        <a href="/admin/leads.html" class="sidebar-link">
+          <span class="nav-icon">&#127919;</span>
+          Leads
+        </a>
+        <a href="/admin/contacts.html" class="sidebar-link">
+          <span class="nav-icon">&#128236;</span>
+          Contacts
+        </a>
+        <a href="/admin/settings.html" class="sidebar-link">
+          <span class="nav-icon">&#9881;</span>
+          Settings
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <button onclick="AdminAPI.logout()" class="btn btn-outline btn-sm btn-block">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1>Dashboard</h1>
+      </div>
+
+      <div class="admin-content">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Clients</div>
+            <div class="stat-value" id="stat-clients">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Active Subscriptions</div>
+            <div class="stat-value" id="stat-subscriptions">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Monthly Recurring Revenue</div>
+            <div class="stat-value gold" id="stat-mrr">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">DFY Revenue (This Month)</div>
+            <div class="stat-value" id="stat-dfy-revenue">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Pending DFY Orders</div>
+            <div class="stat-value" id="stat-dfy-pending">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Leads</div>
+            <div class="stat-value" id="stat-leads">-</div>
+          </div>
+        </div>
+
+        <!-- Subscription Breakdown -->
+        <div class="content-section">
+          <h2>Subscription Breakdown</h2>
+          <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <div class="stat-card">
+              <div class="stat-label">Basic Plan</div>
+              <div class="stat-value" id="plan-basic">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Pro Plan</div>
+              <div class="stat-value" id="plan-pro">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Plus Plan</div>
+              <div class="stat-value" id="plan-plus">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Bundles</div>
+              <div class="stat-value" id="bundle-count">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Custom</div>
+              <div class="stat-value" id="custom-count">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Signups -->
+        <div class="content-section">
+          <div class="section-header-flex">
+            <h2>Recent Signups</h2>
+            <a href="/admin/clients.html" class="btn btn-sm btn-outline">View All</a>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="recent-signups-table">
+                <tr>
+                  <td colspan="3" class="text-center">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent DFY Orders -->
+        <div class="content-section">
+          <div class="section-header-flex">
+            <h2>Recent DFY Orders</h2>
+            <a href="/admin/dfy-orders.html" class="btn btn-sm btn-outline">View All</a>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Client</th>
+                  <th>Service</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="recent-dfy-orders-table">
+                <tr>
+                  <td colspan="6" class="text-center">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Leads -->
+        <div class="content-section">
+          <div class="section-header-flex">
+            <h2>Recent Leads</h2>
+            <a href="/admin/leads.html" class="btn btn-sm btn-outline">View All</a>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Source</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="recent-leads-table">
+                <tr>
+                  <td colspan="5" class="text-center">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/admin/js/admin.js"></script>
+  <script>
+    AdminAPI.requireAuth();
+
+    async function loadDashboard() {
+      try {
+        const data = await AdminAPI.getDashboard();
+
+        // Update main stats
+        document.getElementById('stat-clients').textContent = data.stats.totalClients;
+        document.getElementById('stat-subscriptions').textContent = data.stats.activeSubscriptions;
+        document.getElementById('stat-mrr').textContent = AdminAPI.formatCurrency(data.stats.mrr);
+        document.getElementById('stat-dfy-revenue').textContent = AdminAPI.formatCurrency(data.stats.dfyRevenueMonth);
+        document.getElementById('stat-dfy-pending').textContent = data.dfyOrders.pending;
+        document.getElementById('stat-leads').textContent = data.stats.totalLeads;
+
+        // Update subscription breakdown
+        const planCounts = {
+          'Basic': 0,
+          'Pro': 0,
+          'Plus': 0
+        };
+        data.subscriptionsByPlan.forEach(plan => {
+          planCounts[plan.plan_name] = plan.count;
+        });
+        document.getElementById('plan-basic').textContent = planCounts['Basic'];
+        document.getElementById('plan-pro').textContent = planCounts['Pro'];
+        document.getElementById('plan-plus').textContent = planCounts['Plus'];
+
+        const totalBundles = data.subscriptionsByBundle.reduce((sum, b) => sum + b.count, 0);
+        document.getElementById('bundle-count').textContent = totalBundles;
+        document.getElementById('custom-count').textContent = data.customBundles;
+
+        // Render recent signups
+        const signupsHtml = data.recentSignups.map(user => `
+          <tr>
+            <td>${AdminAPI.escapeHtml(user.first_name)} ${AdminAPI.escapeHtml(user.last_name)}</td>
+            <td>${AdminAPI.escapeHtml(user.email)}</td>
+            <td>${AdminAPI.formatDate(user.created_at)}</td>
+          </tr>
+        `).join('');
+        document.getElementById('recent-signups-table').innerHTML = signupsHtml || '<tr><td colspan="3" class="text-center">No signups yet</td></tr>';
+
+        // Render recent DFY orders
+        const dfyOrdersHtml = data.recentDfyOrders.map(order => `
+          <tr>
+            <td>#${order.id}</td>
+            <td>${AdminAPI.escapeHtml(order.first_name)} ${AdminAPI.escapeHtml(order.last_name)}</td>
+            <td>${AdminAPI.escapeHtml(order.service_name)}</td>
+            <td>${AdminAPI.formatCurrency(order.amount)}</td>
+            <td>${AdminAPI.renderBadge(order.status)}</td>
+            <td>${AdminAPI.formatDate(order.created_at)}</td>
+          </tr>
+        `).join('');
+        document.getElementById('recent-dfy-orders-table').innerHTML = dfyOrdersHtml || '<tr><td colspan="6" class="text-center">No DFY orders yet</td></tr>';
+
+        // Render recent leads
+        const leadsHtml = data.recentLeads.map(lead => `
+          <tr>
+            <td>${AdminAPI.escapeHtml(lead.first_name || '')} ${AdminAPI.escapeHtml(lead.last_name || '')}</td>
+            <td>${AdminAPI.escapeHtml(lead.email)}</td>
+            <td><span class="badge badge-info">${AdminAPI.escapeHtml(lead.source)}</span></td>
+            <td>${lead.converted ? '<span class="badge badge-success">Converted</span>' : '<span class="badge badge-warning">New</span>'}</td>
+            <td>${AdminAPI.formatDate(lead.created_at)}</td>
+          </tr>
+        `).join('');
+        document.getElementById('recent-leads-table').innerHTML = leadsHtml || '<tr><td colspan="5" class="text-center">No leads yet</td></tr>';
+
+      } catch (error) {
+        AdminAPI.showError('Failed to load dashboard: ' + error.message);
+      }
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>

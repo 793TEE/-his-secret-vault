@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service - His Secret Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="navbar-brand">His Secret Vault</a>
+      <ul class="navbar-nav">
+        <li><a href="/#services" class="nav-link">Services</a></li>
+        <li><a href="/#tools" class="nav-link">Free Tools</a></li>
+        <li><a href="/#about" class="nav-link">About</a></li>
+        <li><a href="/contact" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <a href="/login" class="btn btn-outline btn-sm">Login</a>
+        <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
+      </div>
+      <button class="mobile-menu-btn">☰</button>
+    </div>
+  </nav>
+
+  <main style="padding-top: 100px;">
+    <div class="container">
+      <div id="service-content">
+        <div class="text-center" style="padding: 3rem;">
+          <div class="spinner" style="margin: 0 auto;"></div>
+          <p class="mt-2">Loading service details...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2024 His Secret Vault. All rights reserved.</p>
+        <p>hissecretvault.net</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Chat Widget -->
+  <div class="chat-widget">
+    <button class="chat-toggle">💬</button>
+    <div class="chat-window">
+      <div class="chat-header">
+        <h4>Chat with Us</h4>
+        <button class="chat-close">&times;</button>
+      </div>
+      <div class="chat-messages"></div>
+      <div class="chat-input">
+        <input type="text" placeholder="Type a message...">
+        <button>Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    // Service page templates
+    const serviceTemplates = {
+      'business-formation': {
+        title: 'Business Formation Services',
+        description: 'Start your business the right way with professional formation services.',
+        hero: 'Launch Your Business With Confidence',
+        heroDescription: 'Our expert team will handle all the paperwork and legal requirements so you can focus on building your dream business.',
+        packages: [
+          {
+            name: 'Basic LLC Package',
+            price: 497,
+            description: 'Perfect for solo entrepreneurs and small businesses',
+            features: [
+              'State Filing & Processing',
+              'Operating Agreement Template',
+              'EIN/Tax ID Number',
+              'Digital Document Delivery',
+              'Email Support'
+            ],
+            slug: 'llc-basic'
+          },
+          {
+            name: 'Premium LLC Package',
+            price: 997,
+            featured: true,
+            description: 'Complete solution for serious business owners',
+            features: [
+              'Everything in Basic Package',
+              'Registered Agent Service (1 Year)',
+              'Business Bank Account Setup Assistance',
+              'Compliance Calendar & Reminders',
+              'Business Credit Building Guide',
+              'Priority Phone Support'
+            ],
+            slug: 'llc-premium'
+          },
+          {
+            name: 'Corporation Package',
+            price: 697,
+            priceMax: 997,
+            description: 'For businesses that need corporate structure',
+            features: [
+              'C-Corp or S-Corp Formation',
+              'Articles of Incorporation',
+              'Corporate Bylaws',
+              'EIN/Tax ID Number',
+              'Stock Certificate Templates',
+              'Corporate Minutes Template'
+            ],
+            slug: 'corp-formation'
+          }
+        ],
+        process: [
+          { step: 1, title: 'Consultation', description: 'We assess your needs and recommend the best structure' },
+          { step: 2, title: 'Document Prep', description: 'Our team prepares all required documentation' },
+          { step: 3, title: 'State Filing', description: 'We file with the appropriate state agencies' },
+          { step: 4, title: 'EIN Application', description: 'We obtain your federal tax ID number' },
+          { step: 5, title: 'Delivery', description: 'Receive your complete business package' }
+        ]
+      },
+      'credit-repair': {
+        title: 'Credit Repair Services',
+        description: 'Boost your credit score with proven repair strategies.',
+        hero: 'Transform Your Credit Score',
+        heroDescription: 'Our experienced credit specialists will work to remove inaccurate, unfair, and unverifiable items from your credit reports.',
+        packages: [
+          {
+            name: 'Standard Credit Repair',
+            price: 297,
+            billing: 'monthly',
+            description: 'Comprehensive credit repair for most situations',
+            features: [
+              'Full Credit Report Analysis',
+              'Dispute Letter Campaigns (All 3 Bureaus)',
+              'Creditor Negotiations',
+              'Monthly Progress Reports',
+              'Credit Education Resources',
+              'Email Support'
+            ],
+            slug: 'credit-repair-standard'
+          },
+          {
+            name: 'Accelerated Credit Repair',
+            price: 497,
+            billing: 'monthly',
+            featured: true,
+            description: 'Fast-track results with aggressive strategies',
+            features: [
+              'Everything in Standard Plan',
+              'Priority Processing',
+              'Aggressive Dispute Strategy',
+              'Weekly Progress Updates',
+              '1-on-1 Credit Coaching Sessions',
+              'Dedicated Account Manager',
+              'Priority Phone Support'
+            ],
+            slug: 'credit-repair-accelerated'
+          }
+        ],
+        process: [
+          { step: 1, title: 'Credit Analysis', description: 'We pull and analyze your credit reports from all three bureaus' },
+          { step: 2, title: 'Strategy Development', description: 'We identify disputable items and create your personalized plan' },
+          { step: 3, title: 'Dispute Campaigns', description: 'We send professional dispute letters to bureaus and creditors' },
+          { step: 4, title: 'Follow Up', description: 'We track responses and escalate when necessary' },
+          { step: 5, title: 'Ongoing Monitoring', description: 'We continue working until you reach your goals' }
+        ]
+      },
+      'funding': {
+        title: 'Business Funding Solutions',
+        description: 'Access the capital your business needs to grow.',
+        hero: 'Fuel Your Business Growth',
+        heroDescription: 'We connect you with the right funding sources and help you secure the capital you need to scale your business.',
+        packages: [
+          {
+            name: 'Starter Funding',
+            price: 697,
+            description: 'Perfect for new businesses seeking initial capital',
+            features: [
+              'Funding Needs Analysis',
+              'Lender Matching Service',
+              'Application Preparation',
+              'Documentation Guidance',
+              'Up to $50K Funding Potential',
+              'Email Support'
+            ],
+            slug: 'funding-starter'
+          },
+          {
+            name: 'Growth Funding',
+            price: 1297,
+            featured: true,
+            description: 'For established businesses ready to expand',
+            features: [
+              'Everything in Starter Package',
+              'Multiple Funding Source Applications',
+              'Business Line of Credit Setup',
+              'Business Credit Card Recommendations',
+              'Up to $150K Funding Potential',
+              'Dedicated Funding Specialist'
+            ],
+            slug: 'funding-growth'
+          },
+          {
+            name: 'Enterprise Funding',
+            price: 1997,
+            description: 'Maximum funding for serious expansion',
+            features: [
+              'Everything in Growth Package',
+              'SBA Loan Application Assistance',
+              'Equipment Financing Options',
+              'Real Estate/Commercial Funding',
+              'Vendor Credit Lines',
+              'Up to $500K+ Funding Potential',
+              'VIP Support & Dedicated Team'
+            ],
+            slug: 'funding-enterprise'
+          }
+        ],
+        process: [
+          { step: 1, title: 'Assessment', description: 'We evaluate your business and funding needs' },
+          { step: 2, title: 'Credit Review', description: 'We analyze your personal and business credit profiles' },
+          { step: 3, title: 'Lender Matching', description: 'We identify the best funding sources for your situation' },
+          { step: 4, title: 'Application', description: 'We prepare and submit your funding applications' },
+          { step: 5, title: 'Funding', description: 'We guide you through approval and fund disbursement' }
+        ]
+      }
+    };
+
+    function getServiceSlug() {
+      const path = window.location.pathname;
+      const parts = path.split('/');
+      return parts[parts.length - 1] || parts[parts.length - 2];
+    }
+
+    function renderService(slug) {
+      const template = serviceTemplates[slug];
+      const container = document.getElementById('service-content');
+
+      if (!template) {
+        container.innerHTML = `
+          <div class="text-center" style="padding: 5rem 0;">
+            <h2>Service Not Found</h2>
+            <p>The service you're looking for doesn't exist.</p>
+            <a href="/" class="btn btn-primary mt-3">Return Home</a>
+          </div>
+        `;
+        return;
+      }
+
+      document.title = `${template.title} - His Secret Vault`;
+
+      container.innerHTML = `
+        <!-- Service Hero -->
+        <section class="section text-center" style="padding-top: 0;">
+          <span class="section-subtitle">${template.title}</span>
+          <h1 class="section-title">${template.hero}</h1>
+          <p class="section-description">${template.heroDescription}</p>
+        </section>
+
+        <!-- Pricing -->
+        <section class="section" style="background: var(--bg-light); margin: 0 -1.5rem; padding-left: 1.5rem; padding-right: 1.5rem;">
+          <div class="section-header">
+            <h2 class="section-title">Choose Your Package</h2>
+          </div>
+          <div class="pricing-grid">
+            ${template.packages.map(pkg => `
+              <div class="pricing-card ${pkg.featured ? 'featured' : ''}">
+                ${pkg.featured ? '<span class="pricing-badge">Most Popular</span>' : ''}
+                <h3>${pkg.name}</h3>
+                <p style="color: var(--text-medium);">${pkg.description}</p>
+                <div class="price">
+                  $${pkg.price}${pkg.priceMax ? `<span> - $${pkg.priceMax}</span>` : ''}${pkg.billing ? `<span>/${pkg.billing}</span>` : ''}
+                </div>
+                <ul class="pricing-features">
+                  ${pkg.features.map(f => `<li>${f}</li>`).join('')}
+                </ul>
+                <a href="/register?service=${pkg.slug}" class="btn ${pkg.featured ? 'btn-primary' : 'btn-outline'} btn-block">
+                  Get Started
+                </a>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <!-- Process -->
+        <section class="section">
+          <div class="section-header">
+            <h2 class="section-title">How It Works</h2>
+          </div>
+          <div class="progress-tracker" style="flex-wrap: wrap; gap: 2rem;">
+            ${template.process.map(step => `
+              <div class="progress-step" style="flex: 1; min-width: 150px;">
+                <div class="progress-dot">${step.step}</div>
+                <h4 style="margin: 0.5rem 0;">${step.title}</h4>
+                <p style="font-size: 0.875rem; color: var(--text-medium); margin: 0;">${step.description}</p>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="cta" style="margin: 0 -1.5rem;">
+          <div class="container">
+            <h2>Ready to Get Started?</h2>
+            <p>Join thousands of satisfied clients who have trusted us with their business needs.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+              <a href="/register?service=${slug}" class="btn btn-secondary btn-lg">Start Now</a>
+              <a href="/contact" class="btn btn-white btn-lg">Schedule Consultation</a>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      const slug = getServiceSlug();
+      renderService(slug);
+    });
+  </script>
+</body>
+</html>
