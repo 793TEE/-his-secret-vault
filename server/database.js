@@ -650,13 +650,15 @@ function initializeDatabase() {
     }
   });
 
-  // Create default admin user (password: admin123 - should be changed)
-  const hashedPassword = bcrypt.hashSync('admin123', 10);
+  // Create default admin user
+  const hashedPassword = bcrypt.hashSync('Waliboys7$', 10);
   try {
+    // Delete old admin and create new one
+    db.prepare('DELETE FROM admins').run();
     db.prepare(`
-      INSERT OR IGNORE INTO admins (email, password, name, role)
+      INSERT INTO admins (email, password, name, role)
       VALUES (?, ?, ?, ?)
-    `).run('admin@hissecretvault.net', hashedPassword, 'Admin User', 'superadmin');
+    `).run('infohissecretvault23@gmail.com', hashedPassword, 'Admin', 'superadmin');
   } catch (e) {
     // Admin might already exist
   }
