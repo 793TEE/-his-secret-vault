@@ -1443,173 +1443,88 @@ p { margin-bottom: 1rem; }
 .gap-2 { gap: 1rem; }
 .gap-3 { gap: 1.5rem; }
 
-/* Vault AI Banner Section */
+/* Vault AI Compact Banner */
 .vault-ai-section {
-  padding: 2rem 0;
-  background: linear-gradient(180deg, var(--bg-light) 0%, #e8f4f8 100%);
+  padding: 1rem 0;
+  background: transparent;
 }
 
-.vault-ai-banner {
-  position: relative;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem 2rem;
-  overflow: hidden;
-  box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.2);
-}
-
-.vault-ai-glow {
-  position: absolute;
-  top: -50%;
-  right: -10%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.vault-ai-content {
-  position: relative;
+.vault-ai-compact {
   display: flex;
-  align-items: flex-start;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  border-radius: var(--radius-md);
+  padding: 0.875rem 1.25rem;
+  border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
-.vault-ai-badge {
-  position: absolute;
-  top: -0.5rem;
-  left: 0;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: white;
-  padding: 0.2rem 0.75rem;
-  border-radius: 50px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-}
-
-.vault-ai-icon {
-  width: 60px;
-  height: 60px;
+.vai-icon {
+  width: 40px;
+  height: 40px;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border-radius: 14px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.25rem;
   flex-shrink: 0;
-  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
 }
 
-.vault-ai-icon svg {
-  width: 28px;
-  height: 28px;
-  color: white;
-}
-
-.vault-ai-text {
+.vai-content {
   flex: 1;
-  min-width: 300px;
+  min-width: 0;
 }
 
-.vault-ai-text h3 {
+.vai-header {
   color: white;
-  font-size: 1.25rem;
-  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
 }
 
-.vault-ai-text p {
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 0.875rem;
-  margin-bottom: 0.75rem;
-  line-height: 1.5;
+.vai-header strong {
+  color: #a5b4fc;
 }
 
-.vault-ai-stats {
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.vault-ai-stat {
-  text-align: center;
-}
-
-.vault-ai-stat .stat-number {
-  display: block;
-  color: #10b981;
-  font-size: 1.25rem;
-  font-weight: 800;
-}
-
-.vault-ai-stat .stat-label {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.vault-ai-features {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.vault-ai-features li {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.75rem;
-  background: rgba(255, 255, 255, 0.08);
-  padding: 0.3rem 0.6rem;
+.vai-badge {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  padding: 0.15rem 0.5rem;
   border-radius: 50px;
-}
-
-.vault-ai-features li::before {
-  content: '✓';
-  color: #10b981;
+  font-size: 0.6rem;
   font-weight: 700;
-  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  margin-right: 0.5rem;
 }
 
-.vault-ai-cta {
-  text-align: center;
-  flex-shrink: 0;
-  min-width: 160px;
+.vai-content p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  margin: 0;
+  line-height: 1.4;
 }
 
-.vault-ai-cta .btn {
-  white-space: nowrap;
-  box-shadow: 0 8px 20px rgba(201, 162, 39, 0.25);
-  padding: 0.6rem 1.25rem;
-  font-size: 0.875rem;
-}
-
-.vault-ai-offer {
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 0.75rem;
-  margin-top: 0.5rem;
-  margin-bottom: 0;
-}
-
-.vault-ai-offer strong {
+.vai-content p strong {
   color: #10b981;
 }
 
-.vault-ai-pricing {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.7rem;
-  margin-top: 0.25rem;
-  margin-bottom: 0;
+.vai-btn {
+  background: linear-gradient(135deg, #c9a227, #d4b43f);
+  color: #1a1a2e;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
 }
 
-.vault-ai-pricing strong {
-  color: rgba(255, 255, 255, 0.8);
+.vai-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(201, 162, 39, 0.4);
+  color: #1a1a2e;
 }
 
 /* Chat Vault AI Promo */
@@ -1672,67 +1587,37 @@ p { margin-bottom: 1rem; }
 /* Responsive Vault AI */
 @media (max-width: 768px) {
   .vault-ai-section {
-    padding: 1.5rem 0;
+    padding: 0.75rem 0;
   }
 
-  .vault-ai-banner {
-    padding: 1.25rem 1rem;
+  .vault-ai-compact {
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
   }
 
-  .vault-ai-content {
-    flex-direction: column;
-    text-align: center;
-    gap: 1rem;
-  }
-
-  .vault-ai-badge {
-    position: static;
-    margin-bottom: 0.5rem;
-    display: inline-block;
-  }
-
-  .vault-ai-icon {
-    width: 50px;
-    height: 50px;
-    margin: 0 auto;
-  }
-
-  .vault-ai-icon svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  .vault-ai-text h3 {
-    font-size: 1.1rem;
-  }
-
-  .vault-ai-text p {
-    font-size: 0.8rem;
-  }
-
-  .vault-ai-stats {
-    justify-content: center;
-    gap: 1rem;
-  }
-
-  .vault-ai-stat .stat-number {
+  .vai-icon {
+    width: 36px;
+    height: 36px;
     font-size: 1rem;
   }
 
-  .vault-ai-features {
-    justify-content: center;
+  .vai-content {
+    flex: 1 1 calc(100% - 50px);
   }
 
-  .vault-ai-text {
-    min-width: 100%;
+  .vai-header {
+    font-size: 0.85rem;
   }
 
-  .vault-ai-cta {
+  .vai-content p {
+    font-size: 0.75rem;
+  }
+
+  .vai-btn {
     width: 100%;
-  }
-
-  .vault-ai-cta .btn {
-    width: 100%;
+    text-align: center;
+    margin-top: 0.25rem;
   }
 
   .chat-vault-ai-promo {
