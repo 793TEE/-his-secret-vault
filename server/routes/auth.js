@@ -2,7 +2,9 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const { getDb } = require('../database');
+const { sendWelcome, sendPasswordReset } = require('../services/email');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -36,6 +38,8 @@ router.post('/register', async (req, res) => {
     // Generate token
     const token = jwt.sign({ userId: result.lastInsertRowid, type: 'user' }, JWT_SECRET, { expiresIn: '7d' });
 
+    sendWelcome(email, firstName).catch(() => {});
+
     res.status(201).json({
       message: 'Registration successful',
       token,
@@ -49,6 +53,62 @@ router.post('/register', async (req, res) => {
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+// Forgot password — send reset link
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const db = getDb();
+    const user = db.prepare('SELECT id, first_name FROM users WHERE email = ?').get(email.toLowerCase().trim());
+
+    // Always return success so we don't reveal if email exists
+    if (!user) return res.json({ message: 'If that email exists, a reset link has been sent.' });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+
+    db.prepare(`
+      UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?
+    `).run(token, expires, user.id);
+
+    const resetUrl = `${process.env.SITE_URL || 'https://hissecretvault.net'}/reset-password?token=${token}`;
+    await sendPasswordReset(email, user.first_name, resetUrl);
+
+    res.json({ message: 'If that email exists, a reset link has been sent.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
+// Reset password — use token from email
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ error: 'Token and new password are required' });
+    if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+
+    const db = getDb();
+    const user = db.prepare(`
+      SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > ?
+    `).get(token, new Date().toISOString());
+
+    if (!user) return res.status(400).json({ error: 'Reset link is invalid or expired' });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    db.prepare(`
+      UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(hashedPassword, user.id);
+
+    res.json({ message: 'Password reset successful. You can now log in.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
   }
 });
 

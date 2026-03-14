@@ -129,7 +129,9 @@ function initializeDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       email_verified INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'active'
+      status TEXT DEFAULT 'active',
+      reset_token TEXT,
+      reset_token_expires DATETIME
     );
 
     -- Admin users table
