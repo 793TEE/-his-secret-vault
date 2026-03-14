@@ -242,18 +242,25 @@
               </ul>
             </div>
 
-            <!-- Process Steps -->
-            ${order.process_steps && order.process_steps.length > 0 ? `
+            <!-- Progress Steps with per-step controls -->
+            ${order.progress && order.progress.length > 0 ? `
               <div style="margin-top: 1.5rem;">
-                <h4 style="margin-bottom: 1rem;">Process Steps</h4>
+                <h4 style="margin-bottom: 1rem;">Progress Steps</h4>
                 <div class="progress-steps">
-                  ${order.process_steps.map((step, idx) => `
-                    <div class="progress-step-card">
-                      <div class="progress-step-header">
-                        <strong>Step ${idx + 1}: ${AdminAPI.escapeHtml(step)}</strong>
-                        <span class="badge ${order.current_step > idx ? 'badge-success' : order.current_step === idx + 1 ? 'badge-info' : 'badge-warning'}">
-                          ${order.current_step > idx ? 'Completed' : order.current_step === idx + 1 ? 'In Progress' : 'Pending'}
+                  ${order.progress.map((step) => `
+                    <div class="progress-step-card" style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;border:1px solid var(--border-color);border-radius:8px;margin-bottom:0.5rem">
+                      <div>
+                        <strong>Step ${step.step_number}: ${AdminAPI.escapeHtml(step.step_name)}</strong>
+                        ${step.notes ? `<div style="font-size:0.82rem;color:#718096;margin-top:2px">${AdminAPI.escapeHtml(step.notes)}</div>` : ''}
+                      </div>
+                      <div style="display:flex;align-items:center;gap:0.5rem">
+                        <span class="badge ${step.status === 'completed' ? 'badge-success' : step.status === 'in_progress' ? 'badge-info' : 'badge-warning'}">
+                          ${step.status}
                         </span>
+                        ${step.status !== 'completed' ? `
+                          <button class="btn btn-sm btn-primary" onclick="advanceStep(${order.id}, ${step.id}, '${step.status}')">
+                            ${step.status === 'pending' ? 'Start' : 'Complete'}
+                          </button>` : ''}
                       </div>
                     </div>
                   `).join('')}
@@ -269,30 +276,24 @@
               </div>
             ` : ''}
 
-            <!-- Update Form -->
+            <!-- Update Order Status & Notes -->
             <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--border-color);">
               <h4 style="margin-bottom: 1rem;">Update Order</h4>
               <form id="update-order-form" onsubmit="updateOrder(event, ${order.id})">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
-                      <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
-                      <option value="active" ${order.status === 'active' ? 'selected' : ''}>Active</option>
-                      <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
-                      <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Current Step</label>
-                    <input type="number" name="currentStep" class="form-input" value="${order.current_step}" min="1" max="${order.process_steps.length}">
-                  </div>
+                <div class="form-group">
+                  <label class="form-label">Order Status</label>
+                  <select name="status" class="form-select">
+                    <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                    <option value="active" ${order.status === 'active' ? 'selected' : ''}>Active</option>
+                    <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
+                    <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                  </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Notes</label>
+                  <label class="form-label">Internal Notes (visible to client)</label>
                   <textarea name="notes" class="form-textarea">${order.notes || ''}</textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Update Order</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
               </form>
             </div>
           </div>
@@ -312,7 +313,6 @@
       try {
         await AdminAPI.updateDfyOrder(orderId, {
           status: formData.get('status'),
-          currentStep: parseInt(formData.get('currentStep')),
           notes: formData.get('notes')
         });
 
@@ -321,6 +321,17 @@
         loadOrders(currentPage);
       } catch (error) {
         AdminAPI.showError('Failed to update order: ' + error.message);
+      }
+    }
+
+    async function advanceStep(orderId, stepId, currentStatus) {
+      const newStatus = currentStatus === 'pending' ? 'in_progress' : 'completed';
+      try {
+        await AdminAPI.updateDfyOrderProgress(orderId, stepId, { status: newStatus });
+        AdminAPI.showSuccess('Step updated!');
+        viewOrder(orderId); // Refresh modal
+      } catch (error) {
+        AdminAPI.showError('Failed to update step: ' + error.message);
       }
     }
 

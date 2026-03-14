@@ -3,278 +3,660 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - His Secret Vault</title>
+  <title>Dashboard — His Secret Vault</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    /* Progress steps */
+    .progress-tracker { display: flex; flex-direction: column; gap: 0; margin: 1.5rem 0; }
+    .progress-step { display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 0; position: relative; }
+    .progress-step:not(:last-child)::after {
+      content: ''; position: absolute; left: 15px; top: 44px;
+      width: 2px; height: calc(100% - 8px);
+      background: var(--border-color);
+    }
+    .progress-step.completed::after { background: #38a169; }
+    .step-dot {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.8rem; z-index: 1;
+      border: 2px solid var(--border-color); background: #fff; color: #a0aec0;
+    }
+    .progress-step.completed .step-dot { background: #38a169; border-color: #38a169; color: #fff; }
+    .progress-step.in_progress .step-dot { background: #1a365d; border-color: #1a365d; color: #fff; }
+    .step-info { flex: 1; padding-top: 5px; }
+    .step-name { font-weight: 600; font-size: 0.95rem; color: #1a202c; }
+    .step-status { font-size: 0.8rem; color: #a0aec0; margin-top: 2px; }
+    .progress-step.completed .step-status { color: #38a169; }
+    .progress-step.in_progress .step-status { color: #1a365d; }
+
+    /* Settings form */
+    .settings-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.75rem; margin-bottom: 1.5rem; }
+    .settings-section h3 { margin-bottom: 1.25rem; font-size: 1.05rem; color: #1a365d; padding-bottom: 0.75rem; border-bottom: 1px solid #e2e8f0; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-field { margin-bottom: 1rem; }
+    .form-field label { display: block; font-size: 0.85rem; font-weight: 600; color: #4a5568; margin-bottom: 0.35rem; }
+    .form-field input { width: 100%; padding: 0.7rem 0.9rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; color: #1a202c; }
+    .form-field input:focus { outline: none; border-color: #1a365d; box-shadow: 0 0 0 3px rgba(26,54,93,0.1); }
+    .form-field input[readonly] { background: #f7fafc; color: #718096; cursor: not-allowed; }
+    .save-btn { background: #1a365d; color: #fff; border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 700; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; }
+    .save-btn:hover { background: #2c5282; }
+
+    /* AI Tools grid */
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .tool-card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 1.25rem; text-align: center; transition: all 0.2s;
+    }
+    .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: #c9a227; transform: translateY(-2px); }
+    .tool-card.locked { opacity: 0.5; pointer-events: none; }
+    .tool-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .tool-name { font-weight: 600; font-size: 0.9rem; color: #1a365d; }
+    .tool-locked-label { font-size: 0.75rem; color: #a0aec0; margin-top: 0.25rem; }
+
+    /* Sub plan info */
+    .plan-banner {
+      background: linear-gradient(135deg, #0f2744, #1a365d);
+      color: #fff; border-radius: 12px; padding: 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .plan-banner .plan-name { font-size: 1.3rem; font-weight: 700; color: #c9a227; }
+    .plan-banner .plan-price { font-size: 2rem; font-weight: 800; margin: 0.25rem 0; }
+    .plan-banner .plan-meta { font-size: 0.88rem; color: rgba(255,255,255,0.65); }
+    .plan-banner .cancel-btn {
+      margin-top: 1.25rem;
+      background: transparent; border: 1px solid rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.7); border-radius: 6px; padding: 0.5rem 1rem;
+      font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+    }
+    .plan-banner .cancel-btn:hover { border-color: #fc8181; color: #fc8181; }
+
+    /* Alert */
+    .dash-alert { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; display: none; }
+    .dash-alert.success { background: rgba(56,161,105,0.1); color: #276749; border: 1px solid rgba(56,161,105,0.3); display: block; }
+    .dash-alert.error { background: rgba(229,62,62,0.1); color: #9b2c2c; border: 1px solid rgba(229,62,62,0.3); display: block; }
+
+    /* Order cards */
+    .order-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .order-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.25rem; }
+    .order-service-name { font-weight: 700; font-size: 1.05rem; color: #1a365d; }
+    .order-meta { font-size: 0.85rem; color: #718096; margin-top: 2px; }
+    .badge-status { font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-active { background: rgba(56,161,105,0.12); color: #276749; }
+    .badge-completed { background: #e6fffa; color: #234e52; }
+    .badge-cancelled { background: #fff5f5; color: #9b2c2c; }
+
+    @media (max-width: 640px) {
+      .form-row-2 { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
   <!-- Navigation -->
   <nav class="navbar">
     <div class="navbar-container">
-      <a href="/" class="navbar-brand">
-        <span>His Secret Vault</span>
-      </a>
+      <a href="/" class="navbar-brand"><span>His Secret Vault</span></a>
       <ul class="navbar-nav">
         <li><a href="/dashboard" class="nav-link active">Dashboard</a></li>
-        <li><a href="/#services" class="nav-link">Services</a></li>
+        <li><a href="/pricing" class="nav-link">Services</a></li>
         <li><a href="/contact" class="nav-link">Support</a></li>
       </ul>
-      <div class="navbar-actions" id="auth-buttons">
+      <div class="navbar-actions">
         <button onclick="App.logout()" class="btn btn-outline btn-sm">Logout</button>
       </div>
     </div>
   </nav>
 
-  <!-- Dashboard -->
   <div class="dashboard-layout">
     <!-- Sidebar -->
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="/dashboard" class="active">&#128200; Overview</a></li>
-        <li><a href="/dashboard/subscription">&#128179; My Subscription</a></li>
-        <li><a href="/dashboard/ai-tools">&#129302; AI Tools</a></li>
-        <li><a href="/dashboard/orders">&#128230; My Orders</a></li>
-        <li><a href="/dashboard/settings">&#9881; Settings</a></li>
+        <li><a href="/dashboard" id="nav-overview">&#128200; Overview</a></li>
+        <li><a href="/dashboard/subscription" id="nav-subscription">&#128179; My Subscription</a></li>
+        <li><a href="/dashboard/ai-tools" id="nav-ai-tools">&#129302; AI Tools</a></li>
+        <li><a href="/dashboard/orders" id="nav-orders">&#128230; My Orders</a></li>
+        <li><a href="/dashboard/settings" id="nav-settings">&#9881; Settings</a></li>
       </ul>
     </aside>
 
-    <!-- Main Content -->
     <main class="dashboard-main">
-      <div class="dashboard-header">
-        <div>
-          <h1>Welcome back, <span id="user-name">User</span>!</h1>
-          <p style="color: var(--text-medium);">Here's an overview of your account</p>
-        </div>
-        <a href="/#services" class="btn btn-primary">Explore Services</a>
-      </div>
 
-      <!-- Stats Grid -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <h3 id="subscription-status">-</h3>
-          <p>Subscription Status</p>
+      <!-- ===================== OVERVIEW ===================== -->
+      <div id="section-overview" class="dash-section" style="display:none">
+        <div class="dashboard-header">
+          <div>
+            <h1>Welcome back, <span id="user-name">User</span>!</h1>
+            <p style="color:var(--text-medium)">Here's an overview of your account</p>
+          </div>
+          <a href="/pricing" class="btn btn-primary">Explore Services</a>
         </div>
-        <div class="stat-card">
-          <h3 id="ai-modes-count">0</h3>
-          <p>AI Modes Available</p>
-        </div>
-        <div class="stat-card">
-          <h3 id="orders-count">0</h3>
-          <p>Active Orders</p>
-        </div>
-        <div class="stat-card">
-          <h3 id="member-since">-</h3>
-          <p>Member Since</p>
-        </div>
-      </div>
 
-      <!-- Quick Actions -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-        <div class="card">
-          <div class="card-body">
-            <h3>Quick Actions</h3>
-            <div style="display: grid; gap: 1rem; margin-top: 1.5rem;">
-              <a href="/dashboard/ai-tools" class="btn btn-primary btn-block">Access AI Tools</a>
-              <a href="/pricing" class="btn btn-outline btn-block">Browse Plans & Services</a>
-              <a href="/pricing#dfy" class="btn btn-outline btn-block">Done-For-You Services</a>
-              <a href="/contact" class="btn btn-outline btn-block">Contact Support</a>
+        <div class="stats-grid">
+          <div class="stat-card"><h3 id="ov-sub-status">—</h3><p>Subscription</p></div>
+          <div class="stat-card"><h3 id="ov-modes">0</h3><p>AI Modes Available</p></div>
+          <div class="stat-card"><h3 id="ov-orders">0</h3><p>Active Orders</p></div>
+          <div class="stat-card"><h3 id="ov-since">—</h3><p>Member Since</p></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem">
+          <div class="card">
+            <div class="card-body">
+              <h3>Quick Actions</h3>
+              <div style="display:grid;gap:0.85rem;margin-top:1.25rem">
+                <a href="/dashboard/ai-tools" class="btn btn-primary btn-block">Access AI Tools</a>
+                <a href="/pricing" class="btn btn-outline btn-block">Browse Plans &amp; Services</a>
+                <a href="/dashboard/orders" class="btn btn-outline btn-block">Track My Orders</a>
+                <a href="/contact" class="btn btn-outline btn-block">Contact Support</a>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <h3>Your Subscription</h3>
+              <div id="ov-sub-info" style="margin-top:1.25rem">
+                <p style="color:var(--text-medium)">Loading...</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="card">
+        <!-- Member Perks -->
+        <div id="member-perks" class="card" style="display:none;margin-bottom:2rem;background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(201,162,39,0.3)">
           <div class="card-body">
-            <h3>Your Subscription</h3>
-            <div id="subscription-info" style="margin-top: 1.5rem;">
-              <p style="color: var(--text-medium);">Loading subscription details...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Member Perks (shows for active subscribers) -->
-      <div id="member-perks" class="card" style="display: none; margin-bottom: 2rem; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(201, 162, 39, 0.3);">
-        <div class="card-body">
-          <h3 style="color: #c9a227; display: flex; align-items: center; gap: 0.5rem;">
-            ⭐ Member Perks
-          </h3>
-          <div style="margin-top: 1.5rem;">
-            <div style="padding: 1.25rem; background: rgba(0,0,0,0.3); border-radius: var(--radius-md); border: 1px solid rgba(201, 162, 39, 0.2);">
-              <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #c9a227, #d4b43f); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                  ⚡
-                </div>
+            <h3 style="color:#c9a227">&#11088; Member Perks</h3>
+            <div style="margin-top:1.25rem;padding:1.25rem;background:rgba(0,0,0,0.3);border-radius:var(--radius-md);border:1px solid rgba(201,162,39,0.2)">
+              <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+                <div style="width:48px;height:48px;background:linear-gradient(135deg,#c9a227,#d4b43f);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem">&#9889;</div>
                 <div>
-                  <strong style="color: #fff; font-size: 1.1rem;">Vault AI - Premium Access</strong>
-                  <p style="margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--text-medium);">
-                    AI-powered lead automation for your business
-                  </p>
+                  <strong style="color:#fff;font-size:1.05rem">Vault AI — Premium Access</strong>
+                  <p style="margin:0.2rem 0 0;font-size:0.875rem;color:var(--text-medium)">AI-powered lead automation for your business</p>
                 </div>
               </div>
-              <p style="font-size: 0.9rem; color: var(--text-medium); margin-bottom: 1rem;">
-                As an HSV member, you get <strong style="color: #38a169;">250 free AI messages</strong> and extended 14-day access when you sign up for Vault AI with your exclusive code:
-              </p>
-              <div style="display: flex; gap: 0.75rem; align-items: center;">
-                <div style="flex: 1; padding: 0.75rem 1rem; background: rgba(201, 162, 39, 0.15); border: 2px dashed rgba(201, 162, 39, 0.5); border-radius: var(--radius-md); font-family: monospace; font-size: 1.25rem; font-weight: 700; color: #c9a227; text-align: center; letter-spacing: 2px;">
-                  HSVMEMBER
-                </div>
-                <button onclick="copyReferralCode()" class="btn btn-secondary" style="white-space: nowrap;">
-                  📋 Copy
-                </button>
+              <p style="font-size:0.9rem;color:var(--text-medium);margin-bottom:1rem">As an HSV member, get <strong style="color:#38a169">250 free AI messages</strong> + 14-day extended access with your exclusive code:</p>
+              <div style="display:flex;gap:0.75rem;align-items:center">
+                <div style="flex:1;padding:0.75rem 1rem;background:rgba(201,162,39,0.15);border:2px dashed rgba(201,162,39,0.5);border-radius:var(--radius-md);font-family:monospace;font-size:1.25rem;font-weight:700;color:#c9a227;text-align:center;letter-spacing:2px">HSVMEMBER</div>
+                <button onclick="copyCode(this)" data-code="HSVMEMBER" class="btn btn-secondary" style="white-space:nowrap">&#128203; Copy</button>
               </div>
-              <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
-                <a href="https://my-vaultais.vercel.app/signup?code=HSVMEMBER&source=hsv" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center;">
-                  Claim Your Access →
-                </a>
+              <div style="margin-top:1rem">
+                <a href="https://hissecretvault.net" target="_blank" class="btn btn-primary" style="display:block;text-align:center">Launch AI Tools &#8594;</a>
               </div>
-              <p style="font-size: 0.75rem; color: var(--text-medium); margin-top: 0.75rem; text-align: center;">
-                No credit card required • Activate within 14 days
-              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="card">
+          <div class="card-body">
+            <h3>Recent Orders</h3>
+            <div id="ov-orders-list" style="margin-top:1.25rem">
+              <p style="color:var(--text-medium)">Loading...</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Recent Orders -->
-      <div class="card">
-        <div class="card-body">
-          <h3>Recent Orders</h3>
-          <div id="recent-orders" style="margin-top: 1.5rem;">
-            <p style="color: var(--text-medium);">Loading orders...</p>
+      <!-- ===================== SUBSCRIPTION ===================== -->
+      <div id="section-subscription" class="dash-section" style="display:none">
+        <div class="dashboard-header">
+          <div><h1>My Subscription</h1><p style="color:var(--text-medium)">Manage your plan and billing</p></div>
+          <a href="/pricing" class="btn btn-primary">Upgrade Plan</a>
+        </div>
+
+        <div id="sub-alert" class="dash-alert"></div>
+        <div id="sub-content"><p style="color:var(--text-medium)">Loading...</p></div>
+      </div>
+
+      <!-- ===================== AI TOOLS ===================== -->
+      <div id="section-ai-tools" class="dash-section" style="display:none">
+        <div class="dashboard-header">
+          <div><h1>AI Tools</h1><p style="color:var(--text-medium)">Access your included AI modes on hissecretvault.net</p></div>
+          <a href="https://hissecretvault.net" target="_blank" class="btn btn-primary">Launch Platform &#8594;</a>
+        </div>
+
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-body" style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+            <div style="flex:1;min-width:200px">
+              <h3>Your AI Hub</h3>
+              <p style="color:var(--text-medium);font-size:0.93rem;margin-top:0.4rem">All AI tools live at <strong>hissecretvault.net</strong>. Log in with the same email and password you use here.</p>
+            </div>
+            <a href="https://hissecretvault.net" target="_blank" class="btn btn-primary" style="white-space:nowrap">Open hissecretvault.net &#8594;</a>
           </div>
         </div>
+
+        <div id="tools-content"><p style="color:var(--text-medium)">Loading available modes...</p></div>
       </div>
+
+      <!-- ===================== ORDERS ===================== -->
+      <div id="section-orders" class="dash-section" style="display:none">
+        <div class="dashboard-header">
+          <div><h1>My Orders</h1><p style="color:var(--text-medium)">Track your Done-For-You service progress</p></div>
+          <a href="/pricing" class="btn btn-primary">Add a Service</a>
+        </div>
+        <div id="orders-content"><p style="color:var(--text-medium)">Loading orders...</p></div>
+      </div>
+
+      <!-- ===================== SETTINGS ===================== -->
+      <div id="section-settings" class="dash-section" style="display:none">
+        <div class="dashboard-header">
+          <div><h1>Account Settings</h1><p style="color:var(--text-medium)">Update your profile and security</p></div>
+        </div>
+
+        <div id="settings-alert" class="dash-alert"></div>
+
+        <!-- Profile -->
+        <div class="settings-section">
+          <h3>Personal Information</h3>
+          <form id="profile-form" onsubmit="saveProfile(event)">
+            <div class="form-row-2">
+              <div class="form-field">
+                <label>First Name</label>
+                <input type="text" id="s-first" required>
+              </div>
+              <div class="form-field">
+                <label>Last Name</label>
+                <input type="text" id="s-last" required>
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-field">
+                <label>Email Address</label>
+                <input type="email" id="s-email" readonly>
+              </div>
+              <div class="form-field">
+                <label>Phone Number</label>
+                <input type="tel" id="s-phone" placeholder="(555) 000-0000">
+              </div>
+            </div>
+            <button type="submit" class="save-btn">Save Changes</button>
+          </form>
+        </div>
+
+        <!-- Password -->
+        <div class="settings-section">
+          <h3>Change Password</h3>
+          <form id="password-form" onsubmit="changePassword(event)">
+            <div class="form-row-2">
+              <div class="form-field">
+                <label>Current Password</label>
+                <input type="password" id="s-current-pw" required placeholder="Enter current password">
+              </div>
+              <div class="form-field">
+                <label>New Password</label>
+                <input type="password" id="s-new-pw" required minlength="8" placeholder="At least 8 characters">
+              </div>
+            </div>
+            <div class="form-field" style="max-width:320px">
+              <label>Confirm New Password</label>
+              <input type="password" id="s-confirm-pw" required placeholder="Repeat new password">
+            </div>
+            <button type="submit" class="save-btn">Update Password</button>
+          </form>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="settings-section" style="border-color:#fed7d7">
+          <h3 style="color:#e53e3e">Danger Zone</h3>
+          <p style="color:#718096;font-size:0.9rem;margin-bottom:1rem">Need to close your account? Contact us first so we can assist with any active orders.</p>
+          <a href="/contact" class="btn" style="background:#fff5f5;color:#e53e3e;border:1px solid #fed7d7;font-weight:600">Contact Support to Close Account</a>
+        </div>
+      </div>
+
     </main>
   </div>
 
   <script src="/js/app.js"></script>
   <script>
-    // Check authentication
-    if (!App.token) {
-      window.location.href = '/login';
+    if (!App.token) { window.location.href = '/login'; }
+
+    // ---- Routing ----
+    const path = window.location.pathname;
+    const sectionKey = (() => {
+      if (path.includes('/subscription')) return 'subscription';
+      if (path.includes('/ai-tools')) return 'ai-tools';
+      if (path.includes('/orders')) return 'orders';
+      if (path.includes('/settings')) return 'settings';
+      return 'overview';
+    })();
+
+    function showSection(key) {
+      document.querySelectorAll('.dash-section').forEach(s => s.style.display = 'none');
+      document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+      const el = document.getElementById('section-' + key);
+      const nav = document.getElementById('nav-' + key);
+      if (el) el.style.display = 'block';
+      if (nav) nav.classList.add('active');
     }
 
-    // Copy referral code to clipboard
-    function copyReferralCode() {
-      navigator.clipboard.writeText('HSVMEMBER').then(() => {
-        const btn = event.target;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '✓ Copied!';
-        btn.style.background = '#38a169';
-        setTimeout(() => {
-          btn.innerHTML = originalText;
-          btn.style.background = '';
-        }, 2000);
-      });
+    // ---- Shared data ----
+    let currentUser = null;
+    let currentSub = null;
+
+    // ---- Utilities ----
+    function fmtDate(d) { if (!d) return '—'; return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function copyCode(btn) {
+      navigator.clipboard.writeText(btn.dataset.code || 'HSVMEMBER');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '&#10003; Copied!';
+      btn.style.background = '#38a169';
+      setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2000);
+    }
+    function showAlert(elId, msg, type) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.textContent = msg;
+      el.className = 'dash-alert ' + type;
+      setTimeout(() => el.className = 'dash-alert', 4000);
     }
 
-    // Load dashboard data
-    async function loadDashboard() {
+    // ---- Load Overview ----
+    async function loadOverview() {
       try {
-        // Get user info
-        const user = await App.api('/auth/me');
-        document.getElementById('user-name').textContent = user.name ? user.name.split(' ')[0] : 'User';
-        document.getElementById('member-since').textContent = App.formatDate(user.created_at);
+        currentUser = await App.api('/auth/me');
+        document.getElementById('user-name').textContent = (currentUser.firstName || currentUser.first_name || currentUser.name || 'User');
+        document.getElementById('ov-since').textContent = fmtDate(currentUser.created_at);
+      } catch(e) { App.logout(); return; }
 
-        // Get subscription
-        try {
-          const subscription = await App.api('/subscriptions/me');
-          if (subscription && subscription.status === 'active') {
-            document.getElementById('subscription-status').textContent = 'Active';
-            document.getElementById('subscription-status').style.color = 'var(--accent-color)';
-            document.getElementById('ai-modes-count').textContent = subscription.ai_modes?.length || 0;
-
-            // Show member perks for active subscribers
-            document.getElementById('member-perks').style.display = 'block';
-
-            document.getElementById('subscription-info').innerHTML = `
-              <div style="padding: 1rem; background: rgba(56, 161, 105, 0.1); border-radius: var(--radius-md); margin-bottom: 1rem;">
-                <strong>${subscription.plan_name || 'Subscription'}</strong>
-                <p style="margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--text-medium);">
-                  Next billing: ${App.formatDate(subscription.current_period_end)}
-                </p>
+      // Subscription
+      try {
+        currentSub = await App.api('/subscriptions/me');
+        if (currentSub && currentSub.status === 'active') {
+          document.getElementById('ov-sub-status').textContent = 'Active';
+          document.getElementById('ov-sub-status').style.color = '#38a169';
+          document.getElementById('ov-modes').textContent = (currentSub.ai_modes || []).length;
+          document.getElementById('member-perks').style.display = 'block';
+          const planName = currentSub.plan_name || currentSub.bundle_name || 'Subscription';
+          const planPrice = currentSub.plan_price || currentSub.bundle_price || 0;
+          document.getElementById('ov-sub-info').innerHTML = `
+            <div style="padding:1rem;background:rgba(56,161,105,0.08);border-radius:8px;margin-bottom:1rem">
+              <strong>${esc(planName)}</strong>
+              <div style="margin-top:0.35rem;font-size:0.875rem;color:var(--text-medium)">
+                $${planPrice}/mo &nbsp;·&nbsp; Next billing: ${fmtDate(currentSub.current_period_end)}
+                ${currentSub.cancel_at_period_end ? '<br><span style="color:#e53e3e">Cancels at period end</span>' : ''}
               </div>
-              <a href="/dashboard/subscription" class="btn btn-outline btn-block">Manage Subscription</a>
-            `;
-          } else {
-            document.getElementById('subscription-status').textContent = 'None';
-            document.getElementById('subscription-info').innerHTML = `
-              <p style="color: var(--text-medium); margin-bottom: 1rem;">
-                Subscribe to access our AI-powered business tools and resources.
-              </p>
-              <a href="/pricing" class="btn btn-primary btn-block">View Plans</a>
-            `;
-          }
-        } catch (e) {
-          document.getElementById('subscription-status').textContent = 'None';
-          document.getElementById('subscription-info').innerHTML = `
-            <p style="color: var(--text-medium); margin-bottom: 1rem;">
-              Subscribe to access our AI-powered business tools.
-            </p>
-            <a href="/#services" class="btn btn-primary btn-block">View Plans</a>
+            </div>
+            <a href="/dashboard/subscription" class="btn btn-outline btn-block">Manage Subscription</a>
+          `;
+        } else {
+          document.getElementById('ov-sub-status').textContent = 'None';
+          document.getElementById('ov-sub-info').innerHTML = `
+            <p style="color:var(--text-medium);margin-bottom:1rem">Subscribe for AI tools and resources.</p>
+            <a href="/pricing" class="btn btn-primary btn-block">View Plans</a>
           `;
         }
+      } catch(e) {
+        document.getElementById('ov-sub-status').textContent = 'None';
+        document.getElementById('ov-sub-info').innerHTML = `<a href="/pricing" class="btn btn-primary btn-block">View Plans</a>`;
+      }
 
-        // Get DFY orders
-        try {
-          const dfyData = await App.api('/subscriptions/dfy-orders');
-          const dfyOrders = dfyData.orders || [];
-          const activeDFY = dfyOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
-          document.getElementById('orders-count').textContent = activeDFY.length;
-
-          if (dfyOrders.length > 0) {
-            document.getElementById('member-perks').style.display = 'block';
-          }
-
-          if (dfyOrders.length > 0) {
-            document.getElementById('recent-orders').innerHTML = `
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Service</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${dfyOrders.slice(0, 5).map(order => `
-                    <tr>
-                      <td>${order.service_name || 'DFY Service'}</td>
-                      <td>$${order.amount}</td>
-                      <td><span class="badge badge-${order.status === 'completed' ? 'success' : 'warning'}">${order.status}</span></td>
-                      <td>${App.formatDate(order.created_at)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            `;
-          } else {
-            document.getElementById('recent-orders').innerHTML = `
-              <p style="color: var(--text-medium); text-align: center; padding: 2rem;">
-                No orders yet. <a href="/pricing">Browse our services</a> to get started.
-              </p>
-            `;
-          }
-        } catch (e) {
-          document.getElementById('recent-orders').innerHTML = `
-            <p style="color: var(--text-medium); text-align: center; padding: 2rem;">
-              No orders yet. <a href="/pricing">Browse our services</a> to get started.
-            </p>
+      // DFY Orders
+      try {
+        const { orders } = await App.api('/subscriptions/dfy-orders');
+        const active = (orders||[]).filter(o => o.status !== 'completed' && o.status !== 'cancelled');
+        document.getElementById('ov-orders').textContent = active.length;
+        if (orders && orders.length > 0) {
+          document.getElementById('member-perks').style.display = 'block';
+          document.getElementById('ov-orders-list').innerHTML = `
+            <table class="data-table">
+              <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+              <tbody>${orders.slice(0,5).map(o => `
+                <tr>
+                  <td>${esc(o.service_name)}</td>
+                  <td>$${o.amount}</td>
+                  <td><span class="badge badge-${o.status==='completed'?'success':o.status==='active'?'info':'warning'}">${o.status}</span></td>
+                  <td>${fmtDate(o.created_at)}</td>
+                </tr>`).join('')}
+              </tbody>
+            </table>
+            <div style="margin-top:1rem"><a href="/dashboard/orders" class="btn btn-outline">View All Orders</a></div>
           `;
+        } else {
+          document.getElementById('ov-orders-list').innerHTML = `<p style="color:var(--text-medium);text-align:center;padding:1.5rem 0">No orders yet. <a href="/pricing">Browse services</a> to get started.</p>`;
         }
-
-      } catch (error) {
-        console.error('Failed to load dashboard:', error);
-        if (error.message.includes('Invalid') || error.message.includes('expired')) {
-          App.logout();
-        }
+      } catch(e) {
+        document.getElementById('ov-orders-list').innerHTML = `<p style="color:var(--text-medium);text-align:center;padding:1.5rem 0">No orders yet. <a href="/pricing">Browse services</a> to get started.</p>`;
       }
     }
 
-    loadDashboard();
+    // ---- Load Subscription ----
+    async function loadSubscription() {
+      try {
+        const sub = await App.api('/subscriptions/me');
+        if (!sub || sub.status !== 'active') {
+          document.getElementById('sub-content').innerHTML = `
+            <div class="card"><div class="card-body" style="text-align:center;padding:3rem">
+              <div style="font-size:3rem;margin-bottom:1rem">&#128179;</div>
+              <h3 style="margin-bottom:0.75rem">No Active Subscription</h3>
+              <p style="color:var(--text-medium);margin-bottom:1.5rem">Subscribe to access AI tools and premium resources.</p>
+              <a href="/pricing" class="btn btn-primary btn-lg">View Plans</a>
+            </div></div>`;
+          return;
+        }
+
+        const planName = sub.plan_name || sub.bundle_name || 'Subscription';
+        const planPrice = sub.plan_price || sub.bundle_price || 0;
+        const features = sub.plan_features || sub.bundle_features || [];
+        const modes = sub.plan_modes || sub.bundle_modes || [];
+
+        document.getElementById('sub-content').innerHTML = `
+          <div class="plan-banner">
+            <div class="plan-name">${esc(planName)}</div>
+            <div class="plan-price">$${planPrice}<span style="font-size:1rem;font-weight:500;color:rgba(255,255,255,0.65)">/month</span></div>
+            <div class="plan-meta">
+              Renews ${fmtDate(sub.current_period_end)}
+              ${sub.cancel_at_period_end ? '<br><span style="color:#fc8181">&#9888; Cancels at end of period</span>' : ''}
+            </div>
+            ${!sub.cancel_at_period_end ? `<button class="cancel-btn" onclick="cancelSubscription()">Cancel Subscription</button>` : ''}
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+            <div class="card"><div class="card-body">
+              <h3 style="margin-bottom:1rem">Included Features</h3>
+              ${features.length ? `<ul style="list-style:none;padding:0">${features.map(f=>`<li style="padding:0.4rem 0;font-size:0.93rem;display:flex;gap:0.5rem;align-items:flex-start"><span style="color:#38a169;font-weight:700">&#10003;</span>${esc(f)}</li>`).join('')}</ul>` : '<p style="color:var(--text-medium)">All included modes</p>'}
+            </div></div>
+
+            <div class="card"><div class="card-body">
+              <h3 style="margin-bottom:1rem">AI Modes (${modes.length})</h3>
+              ${modes.length ? `<div style="display:flex;flex-wrap:wrap;gap:0.4rem">${modes.map(m=>`<span style="background:#eef2ff;color:#1a365d;font-size:0.8rem;padding:3px 10px;border-radius:20px;font-weight:600">${esc(m)}</span>`).join('')}</div>` : '<p style="color:var(--text-medium)">See plan details</p>'}
+              <div style="margin-top:1.25rem">
+                <a href="https://hissecretvault.net" target="_blank" class="btn btn-primary btn-block">Launch AI Platform &#8594;</a>
+              </div>
+            </div></div>
+          </div>
+
+          <div class="card" style="margin-top:1.5rem"><div class="card-body">
+            <h3>Upgrade or Change Plan</h3>
+            <p style="color:var(--text-medium);margin:0.5rem 0 1rem">Want more modes or a different bundle? Browse all available plans.</p>
+            <a href="/pricing" class="btn btn-primary">See All Plans</a>
+          </div></div>
+        `;
+      } catch(e) {
+        document.getElementById('sub-content').innerHTML = `<p style="color:var(--text-medium)">Failed to load subscription. Please refresh.</p>`;
+      }
+    }
+
+    async function cancelSubscription() {
+      if (!confirm('Are you sure you want to cancel? You keep access until the end of your billing period.')) return;
+      try {
+        await App.api('/subscriptions/cancel', { method: 'POST' });
+        showAlert('sub-alert', 'Subscription cancelled. You retain access until the end of your current period.', 'success');
+        loadSubscription();
+      } catch(e) {
+        showAlert('sub-alert', e.message || 'Failed to cancel. Please contact support.', 'error');
+      }
+    }
+
+    // ---- Load AI Tools ----
+    async function loadAiTools() {
+      try {
+        const sub = await App.api('/subscriptions/me');
+        const hasSub = sub && sub.status === 'active';
+        const availModes = hasSub ? (sub.ai_modes || []) : ['general-chat'];
+
+        const allModes = [
+          { slug:'general-chat', name:'General Chat', icon:'&#128172;', free:true },
+          { slug:'social-media', name:'Social Media', icon:'&#128247;' },
+          { slug:'marketing', name:'Marketing', icon:'&#128200;' },
+          { slug:'credit-mastery', name:'Credit Mastery', icon:'&#127775;' },
+          { slug:'business-formation', name:'Business Formation', icon:'&#127970;' },
+          { slug:'get-funding', name:'Get Funding', icon:'&#128176;' },
+          { slug:'ai-for-business', name:'AI for Business', icon:'&#129302;' },
+          { slug:'ebook-creator', name:'eBook Creator', icon:'&#128218;' },
+          { slug:'tax-expert', name:'Tax Expert', icon:'&#128196;' },
+          { slug:'real-estate', name:'Real Estate', icon:'&#127968;' },
+          { slug:'investing', name:'Investing', icon:'&#128185;' }
+        ];
+
+        const html = `
+          <div class="tools-grid">
+            ${allModes.map(m => {
+              const unlocked = m.free || availModes.includes(m.slug);
+              return `
+                <div class="tool-card ${unlocked ? '' : 'locked'}">
+                  <div class="tool-icon">${m.icon}</div>
+                  <div class="tool-name">${m.name}</div>
+                  <div class="tool-locked-label">${unlocked ? (m.free ? 'Free' : 'Included') : '&#128274; Upgrade to unlock'}</div>
+                </div>`;
+            }).join('')}
+          </div>
+
+          ${!hasSub ? `
+            <div style="margin-top:2rem;padding:1.5rem;background:#fff;border:1px solid #e2e8f0;border-radius:12px;text-align:center">
+              <h3>Want More AI Modes?</h3>
+              <p style="color:var(--text-medium);margin:0.5rem 0 1.25rem">Subscribe to unlock Credit Mastery, Business Formation, Funding, and more.</p>
+              <a href="/pricing" class="btn btn-primary">See Subscription Plans</a>
+            </div>` : ''}
+        `;
+        document.getElementById('tools-content').innerHTML = html;
+      } catch(e) {
+        document.getElementById('tools-content').innerHTML = `<p style="color:var(--text-medium)">Failed to load tools. Please refresh.</p>`;
+      }
+    }
+
+    // ---- Load Orders ----
+    async function loadOrders() {
+      try {
+        const { orders } = await App.api('/subscriptions/dfy-orders');
+        if (!orders || orders.length === 0) {
+          document.getElementById('orders-content').innerHTML = `
+            <div style="text-align:center;padding:4rem 2rem;background:#fff;border:1px solid #e2e8f0;border-radius:12px">
+              <div style="font-size:3rem;margin-bottom:1rem">&#128230;</div>
+              <h3 style="margin-bottom:0.75rem">No Orders Yet</h3>
+              <p style="color:var(--text-medium);margin-bottom:1.5rem">Purchase a Done-For-You service and track your progress here.</p>
+              <a href="/pricing" class="btn btn-primary">Browse Services</a>
+            </div>`;
+          return;
+        }
+
+        const html = orders.map(order => {
+          const steps = order.progress || [];
+          const pct = steps.length ? Math.round((steps.filter(s=>s.status==='completed').length / steps.length) * 100) : 0;
+          const statusClass = { pending:'badge-pending', active:'badge-active', completed:'badge-completed', cancelled:'badge-cancelled' }[order.status] || 'badge-pending';
+
+          return `
+            <div class="order-card">
+              <div class="order-card-header">
+                <div>
+                  <div class="order-service-name">${esc(order.service_name)}</div>
+                  <div class="order-meta">Order #${order.id} &nbsp;·&nbsp; $${order.amount} &nbsp;·&nbsp; ${fmtDate(order.created_at)}</div>
+                </div>
+                <span class="badge-status ${statusClass}">${order.status}</span>
+              </div>
+
+              ${steps.length ? `
+                <div style="margin-bottom:1rem">
+                  <div style="display:flex;justify-content:space-between;font-size:0.83rem;color:#718096;margin-bottom:0.4rem">
+                    <span>Progress</span><span>${pct}%</span>
+                  </div>
+                  <div style="height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden">
+                    <div style="height:100%;width:${pct}%;background:#38a169;border-radius:3px;transition:width 0.5s"></div>
+                  </div>
+                </div>
+                <div class="progress-tracker">
+                  ${steps.map((s,i) => `
+                    <div class="progress-step ${s.status}">
+                      <div class="step-dot">${s.status==='completed'?'&#10003;':(i+1)}</div>
+                      <div class="step-info">
+                        <div class="step-name">${esc(s.step_name)}</div>
+                        <div class="step-status">${s.status==='completed'?'Completed':s.status==='in_progress'?'In Progress — Our team is working on this':'Pending'}</div>
+                        ${s.notes ? `<div style="font-size:0.82rem;color:#4a5568;margin-top:0.25rem;background:#f7fafc;padding:0.4rem 0.6rem;border-radius:4px">${esc(s.notes)}</div>` : ''}
+                        ${s.completed_at ? `<div style="font-size:0.78rem;color:#a0aec0">Done ${fmtDate(s.completed_at)}</div>` : ''}
+                      </div>
+                    </div>`).join('')}
+                </div>` : ''}
+
+              ${order.status !== 'completed' && order.status !== 'cancelled' ? `
+                <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:0.85rem;color:#718096">
+                  Questions about this order? <a href="/contact" style="color:#c9a227;font-weight:600">Contact support</a>
+                </div>` : ''}
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById('orders-content').innerHTML = html;
+      } catch(e) {
+        document.getElementById('orders-content').innerHTML = `<p style="color:var(--text-medium)">Failed to load orders. Please refresh.</p>`;
+      }
+    }
+
+    // ---- Load Settings ----
+    async function loadSettings() {
+      try {
+        const user = await App.api('/auth/me');
+        document.getElementById('s-first').value = user.firstName || user.first_name || '';
+        document.getElementById('s-last').value = user.lastName || user.last_name || '';
+        document.getElementById('s-email').value = user.email || '';
+        document.getElementById('s-phone').value = user.phone || '';
+      } catch(e) { console.error(e); }
+    }
+
+    async function saveProfile(e) {
+      e.preventDefault();
+      try {
+        await App.api('/auth/profile', {
+          method: 'PUT',
+          body: JSON.stringify({
+            firstName: document.getElementById('s-first').value.trim(),
+            lastName: document.getElementById('s-last').value.trim(),
+            phone: document.getElementById('s-phone').value.trim()
+          })
+        });
+        showAlert('settings-alert', 'Profile updated successfully.', 'success');
+      } catch(err) {
+        showAlert('settings-alert', err.message || 'Failed to update profile.', 'error');
+      }
+    }
+
+    async function changePassword(e) {
+      e.preventDefault();
+      const np = document.getElementById('s-new-pw').value;
+      const cp = document.getElementById('s-confirm-pw').value;
+      if (np !== cp) { showAlert('settings-alert', 'New passwords do not match.', 'error'); return; }
+      try {
+        await App.api('/auth/change-password', {
+          method: 'POST',
+          body: JSON.stringify({
+            currentPassword: document.getElementById('s-current-pw').value,
+            newPassword: np
+          })
+        });
+        showAlert('settings-alert', 'Password updated successfully.', 'success');
+        document.getElementById('password-form').reset();
+      } catch(err) {
+        showAlert('settings-alert', err.message || 'Failed to update password.', 'error');
+      }
+    }
+
+    // ---- Init ----
+    showSection(sectionKey);
+    if (sectionKey === 'overview') loadOverview();
+    else if (sectionKey === 'subscription') loadSubscription();
+    else if (sectionKey === 'ai-tools') loadAiTools();
+    else if (sectionKey === 'orders') loadOrders();
+    else if (sectionKey === 'settings') loadSettings();
   </script>
 </body>
 </html>

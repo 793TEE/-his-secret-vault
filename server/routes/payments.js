@@ -219,35 +219,77 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
   // Handle the event
   switch (event.type) {
-    case 'payment_intent.succeeded':
-      const paymentIntent = event.data.object;
-      console.log('Payment succeeded:', paymentIntent.id);
-      // Update order status
-      db.prepare(`
-        UPDATE orders SET payment_status = 'paid', updated_at = CURRENT_TIMESTAMP
-        WHERE stripe_payment_id = ?
-      `).run(paymentIntent.id);
+    case 'payment_intent.succeeded': {
+      const pi = event.data.object;
+      db.prepare(`UPDATE orders SET payment_status = 'paid', updated_at = CURRENT_TIMESTAMP WHERE stripe_payment_id = ?`).run(pi.id);
+      db.prepare(`UPDATE dfy_orders SET payment_status = 'paid', updated_at = CURRENT_TIMESTAMP WHERE stripe_payment_id = ?`).run(pi.id);
       break;
+    }
 
-    case 'payment_intent.payment_failed':
-      const failedPayment = event.data.object;
-      console.log('Payment failed:', failedPayment.id);
-      db.prepare(`
-        UPDATE orders SET payment_status = 'failed', updated_at = CURRENT_TIMESTAMP
-        WHERE stripe_payment_id = ?
-      `).run(failedPayment.id);
+    case 'payment_intent.payment_failed': {
+      const pi = event.data.object;
+      db.prepare(`UPDATE orders SET payment_status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE stripe_payment_id = ?`).run(pi.id);
+      db.prepare(`UPDATE dfy_orders SET payment_status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE stripe_payment_id = ?`).run(pi.id);
       break;
+    }
 
-    case 'customer.subscription.deleted':
-      const subscription = event.data.object;
+    case 'invoice.payment_succeeded': {
+      // Subscription renewed
+      const invoice = event.data.object;
+      if (invoice.subscription) {
+        const periodEnd = new Date(invoice.lines.data[0]?.period?.end * 1000).toISOString();
+        db.prepare(`
+          UPDATE user_subscriptions
+          SET status = 'active', current_period_end = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE stripe_subscription_id = ?
+        `).run(periodEnd, invoice.subscription);
+      }
+      break;
+    }
+
+    case 'invoice.payment_failed': {
+      // Subscription payment failed
+      const invoice = event.data.object;
+      if (invoice.subscription) {
+        console.log('Subscription payment failed for:', invoice.subscription);
+        // Don't immediately cancel — Stripe will retry. Log it.
+        db.prepare(`
+          UPDATE user_subscriptions SET updated_at = CURRENT_TIMESTAMP WHERE stripe_subscription_id = ?
+        `).run(invoice.subscription);
+      }
+      break;
+    }
+
+    case 'customer.subscription.updated': {
+      const sub = event.data.object;
+      const periodEnd = sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null;
       db.prepare(`
-        UPDATE orders SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+        UPDATE user_subscriptions
+        SET status = ?,
+            cancel_at_period_end = ?,
+            current_period_end = COALESCE(?, current_period_end),
+            updated_at = CURRENT_TIMESTAMP
         WHERE stripe_subscription_id = ?
-      `).run(subscription.id);
+      `).run(
+        sub.status === 'active' ? 'active' : sub.status === 'canceled' ? 'cancelled' : sub.status,
+        sub.cancel_at_period_end ? 1 : 0,
+        periodEnd,
+        sub.id
+      );
       break;
+    }
+
+    case 'customer.subscription.deleted': {
+      const sub = event.data.object;
+      db.prepare(`
+        UPDATE user_subscriptions SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+        WHERE stripe_subscription_id = ?
+      `).run(sub.id);
+      break;
+    }
 
     default:
-      console.log(`Unhandled event type ${event.type}`);
+      console.log(`Unhandled webhook event: ${event.type}`);
   }
 
   res.json({ received: true });

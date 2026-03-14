@@ -312,6 +312,8 @@ router.post('/subscribe', authMiddleware, async (req, res) => {
       periodEnd.toISOString()
     );
 
+    db.save();
+
     // Send confirmation email
     sendOrderConfirmation(
       user.email,
@@ -349,12 +351,14 @@ router.post('/cancel', authMiddleware, async (req, res) => {
       db.prepare(`
         UPDATE user_subscriptions SET cancel_at_period_end = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?
       `).run(sub.id);
+      db.save();
       return res.json({ message: 'Subscription will cancel at end of billing period' });
     }
 
     db.prepare(`
       UPDATE user_subscriptions SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = ?
     `).run(sub.id);
+    db.save();
 
     res.json({ message: 'Subscription cancelled' });
   } catch (error) {
@@ -436,6 +440,8 @@ router.post('/dfy-confirm', authMiddleware, async (req, res) => {
     steps.forEach((step, i) => {
       insertStep.run(orderId, i + 1, step, i === 0 ? 'in_progress' : 'pending');
     });
+
+    db.save();
 
     // Send confirmation email
     sendOrderConfirmation(
