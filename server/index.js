@@ -53,56 +53,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Health check and login test
-app.get('/api/health', async (req, res) => {
-  try {
-    const bcrypt = require('bcryptjs');
-    const { getDb } = require('./database');
-    const db = getDb();
-    const admin = db.prepare('SELECT email, password FROM admins LIMIT 1').get();
-
-    // Test if password matches
-    let passwordTest = 'no admin';
-    if (admin) {
-      const matches = await bcrypt.compare('admin123', admin.password);
-      passwordTest = matches ? 'password OK' : 'password MISMATCH';
-    }
-
-    res.json({
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      adminEmail: admin?.email || 'none',
-      passwordTest
-    });
-  } catch (error) {
-    res.json({ status: 'error', message: error.message });
-  }
-});
-
-// Direct login test endpoint
-app.post('/api/test-login', async (req, res) => {
-  try {
-    const bcrypt = require('bcryptjs');
-    const { getDb } = require('./database');
-    const db = getDb();
-    const { email, password } = req.body;
-
-    const admin = db.prepare('SELECT * FROM admins WHERE email = ?').get(email);
-
-    if (!admin) {
-      return res.json({ success: false, reason: 'admin not found', emailReceived: email });
-    }
-
-    const valid = await bcrypt.compare(password, admin.password);
-    res.json({
-      success: valid,
-      reason: valid ? 'login would succeed' : 'password mismatch',
-      emailReceived: email,
-      passwordLength: password?.length
-    });
-  } catch (error) {
-    res.json({ success: false, error: error.message });
-  }
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Serve HTML pages

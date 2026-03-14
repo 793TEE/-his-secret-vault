@@ -4,7 +4,8 @@ const bcrypt = require('bcryptjs');
 const { getDb } = require('../database');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error('JWT_SECRET environment variable is required');
 
 // Admin auth middleware
 const adminAuth = (req, res, next) => {
@@ -660,7 +661,8 @@ router.put('/services/:id', adminAuth, (req, res) => {
 router.get('/analytics/revenue', adminAuth, (req, res) => {
   try {
     const db = getDb();
-    const { period = '30' } = req.query;
+    const period = Math.min(Math.max(parseInt(req.query.period) || 30, 1), 365);
+    const periodFilter = `-${period} days`;
 
     const revenueByDay = db.prepare(`
       SELECT
@@ -668,10 +670,10 @@ router.get('/analytics/revenue', adminAuth, (req, res) => {
         SUM(amount) as total,
         COUNT(*) as transactions
       FROM revenue
-      WHERE recorded_at >= date('now', '-${period} days')
+      WHERE recorded_at >= date('now', ?)
       GROUP BY date(recorded_at)
       ORDER BY date
-    `).all();
+    `).all(periodFilter);
 
     const revenueByService = db.prepare(`
       SELECT
@@ -682,10 +684,10 @@ router.get('/analytics/revenue', adminAuth, (req, res) => {
       FROM revenue r
       JOIN orders o ON r.order_id = o.id
       JOIN services s ON o.service_id = s.id
-      WHERE r.recorded_at >= date('now', '-${period} days')
+      WHERE r.recorded_at >= date('now', ?)
       GROUP BY s.id
       ORDER BY total DESC
-    `).all();
+    `).all(periodFilter);
 
     const summary = db.prepare(`
       SELECT
@@ -693,8 +695,8 @@ router.get('/analytics/revenue', adminAuth, (req, res) => {
         COUNT(*) as transactions,
         AVG(amount) as average
       FROM revenue
-      WHERE recorded_at >= date('now', '-${period} days')
-    `).get();
+      WHERE recorded_at >= date('now', ?)
+    `).get(periodFilter);
 
     res.json({
       revenueByDay,
