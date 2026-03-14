@@ -126,6 +126,14 @@ app.get('/terms', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/terms.html'));
 });
 
+app.get('/pricing', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/pricing.html'));
+});
+
+app.get('/checkout', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/checkout.html'));
+});
+
 
 // Initialize database and start server
 async function startServer() {
@@ -144,6 +152,7 @@ async function startServer() {
     const paymentRoutes = require('./routes/payments');
     const documentRoutes = require('./routes/documents');
     const chatRoutes = require('./routes/chat');
+    const subscriptionRoutes = require('./routes/subscriptions');
 
     // API Routes
     app.use('/api/auth', authRoutes);
@@ -154,6 +163,7 @@ async function startServer() {
     app.use('/api/payments', paymentRoutes);
     app.use('/api/documents', documentRoutes);
     app.use('/api/chat', chatRoutes);
+    app.use('/api/subscriptions', subscriptionRoutes);
 
     // 404 handler (must be after all routes)
     app.use((req, res, next) => {

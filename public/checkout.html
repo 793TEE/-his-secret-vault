@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — His Secret Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    body { background: #f7fafc; }
+    .checkout-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 100px 1rem 60px;
+    }
+    .checkout-box {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 520px;
+      overflow: hidden;
+    }
+    .checkout-header {
+      background: linear-gradient(135deg, #0f2744, #1a365d);
+      padding: 2rem;
+      color: #fff;
+    }
+    .checkout-header .logo { font-weight: 800; font-size: 1rem; color: #c9a227; margin-bottom: 1rem; }
+    .checkout-header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .checkout-header p { color: rgba(255,255,255,0.7); font-size: 0.9rem; }
+    .order-summary {
+      background: rgba(201,162,39,0.1);
+      border: 1px solid rgba(201,162,39,0.25);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-top: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .order-summary .order-name { font-weight: 600; color: #fff; font-size: 0.97rem; }
+    .order-summary .order-type { font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 2px; }
+    .order-summary .order-price { font-size: 1.5rem; font-weight: 800; color: #c9a227; }
+    .checkout-body { padding: 2rem; }
+
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #4a5568; margin-bottom: 0.4rem; }
+    .form-group input {
+      width: 100%; padding: 0.75rem 1rem;
+      border: 1px solid #e2e8f0; border-radius: 8px;
+      font-size: 0.95rem; color: #1a202c;
+      background: #fff; transition: all 0.2s;
+    }
+    .form-group input:focus { outline: none; border-color: #1a365d; box-shadow: 0 0 0 3px rgba(26,54,93,0.1); }
+
+    /* Stripe Element container */
+    #card-element {
+      padding: 0.75rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fff;
+      transition: all 0.2s;
+    }
+    #card-element.focused { border-color: #1a365d; box-shadow: 0 0 0 3px rgba(26,54,93,0.1); }
+    #card-errors { color: #e53e3e; font-size: 0.85rem; margin-top: 0.4rem; min-height: 1.2rem; }
+
+    .btn-pay {
+      width: 100%; padding: 1rem;
+      background: #c9a227; color: #000;
+      font-weight: 700; font-size: 1.05rem;
+      border: none; border-radius: 10px;
+      cursor: pointer; margin-top: 1.25rem;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-pay:hover:not(:disabled) { background: #d4b43f; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(201,162,39,0.35); }
+    .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .secure-note {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #a0aec0;
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+
+    .divider { border: none; border-top: 1px solid #e2e8f0; margin: 1.5rem 0; }
+
+    /* Success / Error states */
+    .result-box { text-align: center; padding: 2rem; }
+    .result-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .result-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .result-text { color: #718096; font-size: 0.95rem; margin-bottom: 1.5rem; }
+    .result-box .btn { display: inline-block; }
+
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(0,0,0,0.2);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      color: #718096; font-size: 0.88rem; text-decoration: none;
+      padding: 2rem 2rem 0;
+    }
+    .back-link:hover { color: #1a365d; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="navbar-brand"><span>His Secret Vault</span></a>
+      <div class="navbar-actions" id="auth-buttons"></div>
+    </div>
+  </nav>
+
+  <div class="checkout-wrapper">
+    <div class="checkout-box">
+      <a href="/pricing" class="back-link">&#8592; Back to pricing</a>
+
+      <!-- Checkout form (shown by default) -->
+      <div id="checkout-form-section">
+        <div class="checkout-header">
+          <div class="logo">His Secret Vault</div>
+          <h1>Complete Your Order</h1>
+          <p>Secure checkout powered by Stripe</p>
+          <div class="order-summary">
+            <div>
+              <div class="order-name" id="order-name">Loading...</div>
+              <div class="order-type" id="order-type"></div>
+            </div>
+            <div class="order-price" id="order-price">—</div>
+          </div>
+        </div>
+
+        <div class="checkout-body">
+          <div class="form-group">
+            <label>Name on Card</label>
+            <input type="text" id="cardholder-name" placeholder="John Smith" autocomplete="cc-name">
+          </div>
+
+          <div class="form-group">
+            <label>Card Details</label>
+            <div id="card-element"></div>
+            <div id="card-errors" role="alert"></div>
+          </div>
+
+          <hr class="divider">
+
+          <div id="demo-notice" style="display:none;background:#fef3c7;border:1px solid #f6ad55;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.85rem;color:#744210;">
+            <strong>Test Mode:</strong> Stripe is not configured. This is a demo checkout — no real payment will be processed.
+          </div>
+
+          <button class="btn-pay" id="pay-btn" disabled>
+            <span id="pay-label">Loading...</span>
+          </button>
+
+          <div class="secure-note">
+            <span>&#128274;</span> Payments secured by Stripe. We never store card details.
+          </div>
+        </div>
+      </div>
+
+      <!-- Success state -->
+      <div id="success-section" style="display:none">
+        <div class="result-box">
+          <div class="result-icon">&#10003;</div>
+          <div class="result-title" style="color:#38a169">Payment Successful!</div>
+          <p class="result-text" id="success-msg">Your order has been confirmed. Check your email for a receipt and next steps.</p>
+          <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+        </div>
+      </div>
+
+      <!-- Error state -->
+      <div id="error-section" style="display:none">
+        <div class="result-box">
+          <div class="result-icon">&#10060;</div>
+          <div class="result-title" style="color:#e53e3e">Something Went Wrong</div>
+          <p class="result-text" id="error-msg">There was an issue processing your payment. Please try again.</p>
+          <button class="btn btn-primary" onclick="resetCheckout()">Try Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const checkoutType = params.get('type'); // 'plan' | 'bundle' | 'dfy'
+    const slug = params.get('slug');
+    const name = decodeURIComponent(params.get('name') || '');
+    const price = parseFloat(params.get('price') || '0');
+
+    let stripe, elements, cardElement;
+    let clientSecret = null;
+    let isDemoMode = false;
+
+    async function initCheckout() {
+      // Require login
+      const token = localStorage.getItem('hsv_token');
+      if (!token) {
+        window.location.href = '/login?next=' + encodeURIComponent(window.location.href);
+        return;
+      }
+
+      // Update UI with plan info
+      document.getElementById('order-name').textContent = name || 'Service';
+      document.getElementById('order-price').textContent = '$' + price.toFixed(0);
+
+      const typeLabel = checkoutType === 'dfy'
+        ? 'Done-For-You Service — One-Time Payment'
+        : checkoutType === 'plan'
+          ? 'AI Subscription — Billed Monthly'
+          : 'AI Bundle — Billed Monthly';
+      document.getElementById('order-type').textContent = typeLabel;
+
+      // Load Stripe config
+      const config = await fetch('/api/payments/config').then(r => r.json());
+      isDemoMode = config.demoMode;
+
+      if (isDemoMode) {
+        document.getElementById('demo-notice').style.display = 'block';
+        stripe = null;
+      } else {
+        stripe = Stripe(config.publishableKey);
+        elements = stripe.elements();
+        cardElement = elements.create('card', {
+          style: {
+            base: {
+              fontFamily: 'Inter, sans-serif',
+              fontSize: '15px',
+              color: '#1a202c',
+              '::placeholder': { color: '#a0aec0' }
+            },
+            invalid: { color: '#e53e3e' }
+          }
+        });
+        cardElement.mount('#card-element');
+        cardElement.on('change', ({ error }) => {
+          document.getElementById('card-errors').textContent = error ? error.message : '';
+        });
+        cardElement.on('focus', () => document.getElementById('card-element').classList.add('focused'));
+        cardElement.on('blur', () => document.getElementById('card-element').classList.remove('focused'));
+      }
+
+      // Get client secret from backend
+      await fetchClientSecret();
+
+      // Enable pay button
+      const payBtn = document.getElementById('pay-btn');
+      payBtn.disabled = false;
+      const suffix = checkoutType === 'dfy' ? '' : '/mo';
+      document.getElementById('pay-label').textContent = `Pay $${price.toFixed(0)}${suffix}`;
+      payBtn.addEventListener('click', handleSubmit);
+
+      // Update auth UI
+      try { await App.checkAuth(); App.updateAuthUI(); } catch(e) {}
+    }
+
+    async function fetchClientSecret() {
+      const token = localStorage.getItem('hsv_token');
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      };
+
+      try {
+        if (checkoutType === 'dfy') {
+          const res = await fetch('/api/subscriptions/dfy-intent', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ serviceSlug: slug })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+          clientSecret = data.clientSecret;
+          isDemoMode = data.demoMode || isDemoMode;
+        } else {
+          const res = await fetch('/api/subscriptions/create-intent', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ planSlug: slug, planType: checkoutType })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+          clientSecret = data.clientSecret;
+          isDemoMode = data.demoMode || isDemoMode;
+        }
+      } catch (err) {
+        showError(err.message || 'Failed to initialize checkout. Please try again.');
+      }
+    }
+
+    async function handleSubmit() {
+      const payBtn = document.getElementById('pay-btn');
+      const label = document.getElementById('pay-label');
+      payBtn.disabled = true;
+      label.innerHTML = '<span class="spinner"></span>';
+
+      const token = localStorage.getItem('hsv_token');
+      const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+      try {
+        if (isDemoMode) {
+          await processDemoPayment(token, headers);
+          return;
+        }
+
+        const cardholderName = document.getElementById('cardholder-name').value.trim();
+
+        if (checkoutType === 'dfy') {
+          // Confirm payment intent
+          const { paymentIntent, error } = await stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+              card: cardElement,
+              billing_details: { name: cardholderName }
+            }
+          });
+
+          if (error) throw new Error(error.message);
+
+          // Confirm order in backend
+          const res = await fetch('/api/subscriptions/dfy-confirm', {
+            method: 'POST', headers,
+            body: JSON.stringify({ paymentIntentId: paymentIntent.id, serviceSlug: slug })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+
+          showSuccess(`Your order for ${name} has been confirmed (#${data.orderId}). We'll be in touch shortly!`);
+
+        } else {
+          // Create payment method for subscription
+          const { paymentMethod, error } = await stripe.createPaymentMethod({
+            type: 'card',
+            card: cardElement,
+            billing_details: { name: cardholderName }
+          });
+
+          if (error) throw new Error(error.message);
+
+          const res = await fetch('/api/subscriptions/subscribe', {
+            method: 'POST', headers,
+            body: JSON.stringify({
+              planSlug: slug,
+              planType: checkoutType,
+              paymentMethodId: paymentMethod.id
+            })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+
+          showSuccess(`Your ${name} subscription is now active! Access your AI tools in the dashboard.`);
+        }
+
+      } catch (err) {
+        document.getElementById('card-errors').textContent = err.message;
+        payBtn.disabled = false;
+        label.textContent = `Pay $${price.toFixed(0)}${checkoutType === 'dfy' ? '' : '/mo'}`;
+      }
+    }
+
+    async function processDemoPayment(token, headers) {
+      try {
+        const label = document.getElementById('pay-label');
+        // Simulate delay
+        await new Promise(r => setTimeout(r, 1200));
+
+        if (checkoutType === 'dfy') {
+          const res = await fetch('/api/subscriptions/dfy-confirm', {
+            method: 'POST', headers,
+            body: JSON.stringify({ serviceSlug: slug, demoMode: true })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+          showSuccess(`[DEMO] Your order for ${name} has been recorded (#${data.orderId}). Configure Stripe for real payments.`);
+        } else {
+          const res = await fetch('/api/subscriptions/subscribe', {
+            method: 'POST', headers,
+            body: JSON.stringify({ planSlug: slug, planType: checkoutType, demoMode: true })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+          showSuccess(`[DEMO] Your ${name} subscription has been activated. Configure Stripe for real payments.`);
+        }
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    function showSuccess(msg) {
+      document.getElementById('checkout-form-section').style.display = 'none';
+      document.getElementById('success-msg').textContent = msg;
+      document.getElementById('success-section').style.display = 'block';
+    }
+
+    function showError(msg) {
+      document.getElementById('checkout-form-section').style.display = 'none';
+      document.getElementById('error-msg').textContent = msg;
+      document.getElementById('error-section').style.display = 'block';
+    }
+
+    function resetCheckout() {
+      document.getElementById('error-section').style.display = 'none';
+      document.getElementById('checkout-form-section').style.display = 'block';
+      const payBtn = document.getElementById('pay-btn');
+      payBtn.disabled = false;
+      document.getElementById('pay-label').textContent = `Pay $${price.toFixed(0)}${checkoutType === 'dfy' ? '' : '/mo'}`;
+    }
+
+    // Guard: redirect if no plan selected
+    if (!slug || !checkoutType) {
+      window.location.href = '/pricing';
+    } else {
+      initCheckout();
+    }
+  </script>
+</body>
+</html>

@@ -77,8 +77,8 @@
             <h3>Quick Actions</h3>
             <div style="display: grid; gap: 1rem; margin-top: 1.5rem;">
               <a href="/dashboard/ai-tools" class="btn btn-primary btn-block">Access AI Tools</a>
-              <a href="/services/business-formation" class="btn btn-outline btn-block">Start Business Formation</a>
-              <a href="/services/credit-repair" class="btn btn-outline btn-block">Start Credit Repair</a>
+              <a href="/pricing" class="btn btn-outline btn-block">Browse Plans & Services</a>
+              <a href="/pricing#dfy" class="btn btn-outline btn-block">Done-For-You Services</a>
               <a href="/contact" class="btn btn-outline btn-block">Contact Support</a>
             </div>
           </div>
@@ -204,7 +204,7 @@
               <p style="color: var(--text-medium); margin-bottom: 1rem;">
                 Subscribe to access our AI-powered business tools and resources.
               </p>
-              <a href="/#services" class="btn btn-primary btn-block">View Plans</a>
+              <a href="/pricing" class="btn btn-primary btn-block">View Plans</a>
             `;
           }
         } catch (e) {
@@ -217,35 +217,35 @@
           `;
         }
 
-        // Get orders
+        // Get DFY orders
         try {
-          const orders = await App.api('/orders');
-          const activeOrders = orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
-          document.getElementById('orders-count').textContent = activeOrders.length;
+          const dfyData = await App.api('/subscriptions/dfy-orders');
+          const dfyOrders = dfyData.orders || [];
+          const activeDFY = dfyOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
+          document.getElementById('orders-count').textContent = activeDFY.length;
 
-          // Show member perks if they have any orders (paid customers)
-          if (orders.length > 0) {
+          if (dfyOrders.length > 0) {
             document.getElementById('member-perks').style.display = 'block';
           }
 
-          if (orders.length > 0) {
+          if (dfyOrders.length > 0) {
             document.getElementById('recent-orders').innerHTML = `
               <table class="data-table">
                 <thead>
                   <tr>
                     <th>Service</th>
+                    <th>Amount</th>
                     <th>Status</th>
                     <th>Date</th>
-                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${orders.slice(0, 5).map(order => `
+                  ${dfyOrders.slice(0, 5).map(order => `
                     <tr>
-                      <td>${order.service_name || 'Service'}</td>
-                      <td><span class="badge badge-${order.status === 'completed' ? 'success' : order.status === 'in_progress' ? 'info' : 'warning'}">${order.status}</span></td>
+                      <td>${order.service_name || 'DFY Service'}</td>
+                      <td>$${order.amount}</td>
+                      <td><span class="badge badge-${order.status === 'completed' ? 'success' : 'warning'}">${order.status}</span></td>
                       <td>${App.formatDate(order.created_at)}</td>
-                      <td><a href="/dashboard/orders?id=${order.id}" class="btn btn-sm btn-outline">View</a></td>
                     </tr>
                   `).join('')}
                 </tbody>
@@ -254,14 +254,14 @@
           } else {
             document.getElementById('recent-orders').innerHTML = `
               <p style="color: var(--text-medium); text-align: center; padding: 2rem;">
-                No orders yet. <a href="/#services">Browse our services</a> to get started.
+                No orders yet. <a href="/pricing">Browse our services</a> to get started.
               </p>
             `;
           }
         } catch (e) {
           document.getElementById('recent-orders').innerHTML = `
             <p style="color: var(--text-medium); text-align: center; padding: 2rem;">
-              No orders yet. <a href="/#services">Browse our services</a> to get started.
+              No orders yet. <a href="/pricing">Browse our services</a> to get started.
             </p>
           `;
         }
