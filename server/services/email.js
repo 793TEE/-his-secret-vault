@@ -68,4 +68,41 @@ async function sendPasswordReset(to, firstName, resetUrl) {
   `);
 }
 
-module.exports = { sendEmail, sendWelcome, sendOrderConfirmation, sendPasswordReset };
+async function sendOrderProgress(to, firstName, serviceName, stepName, orderId, isComplete) {
+  const subject = isComplete
+    ? `Your ${serviceName} is Complete!`
+    : `Update on Your ${serviceName} Order`;
+
+  const headline = isComplete
+    ? `Great news, ${firstName} — your order is complete!`
+    : `Your order just moved forward, ${firstName}!`;
+
+  const badge = isComplete
+    ? `<div style="display:inline-block;background:#38a169;color:#fff;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:700;margin-bottom:16px">&#10003; Completed</div>`
+    : `<div style="display:inline-block;background:#1a365d;color:#fff;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:700;margin-bottom:16px">&#9654; In Progress</div>`;
+
+  return sendEmail(to, subject, `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+      <div style="background:linear-gradient(135deg,#0f2744,#1a365d);padding:28px 32px;border-radius:10px 10px 0 0">
+        <div style="color:#c9a227;font-weight:800;font-size:1rem;margin-bottom:6px">His Secret Vault</div>
+        <h2 style="color:#fff;margin:0;font-size:1.4rem">${headline}</h2>
+      </div>
+      <div style="background:#fff;padding:28px 32px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 10px 10px">
+        <p style="color:#4a5568;margin-bottom:20px">Here's the latest on your <strong>${serviceName}</strong> order:</p>
+        <div style="background:#f7fafc;border-left:4px solid #c9a227;padding:16px 20px;border-radius:4px;margin-bottom:20px">
+          <div style="font-size:13px;color:#718096;margin-bottom:4px">Current Step</div>
+          ${badge}
+          <div style="font-weight:700;font-size:1.05rem;color:#1a365d">${stepName}</div>
+        </div>
+        ${isComplete
+          ? `<p style="color:#4a5568">Your order has been completed. All deliverables are ready for you in your dashboard.</p>`
+          : `<p style="color:#4a5568">Our team is actively working on this step. We'll notify you again when it's complete.</p>`}
+        <a href="https://hissecretvault.net/dashboard/orders" style="display:inline-block;background:#c9a227;color:#000;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;margin:16px 0">Track Your Order</a>
+        <p style="color:#a0aec0;font-size:13px;margin-top:16px">Order #${orderId} · Questions? Reply to this email.</p>
+        <p style="color:#718096">— The His Secret Vault Team</p>
+      </div>
+    </div>
+  `);
+}
+
+module.exports = { sendEmail, sendWelcome, sendOrderConfirmation, sendPasswordReset, sendOrderProgress };

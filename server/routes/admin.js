@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { getDb } = require('../database');
+const { sendOrderProgress } = require('../services/email');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
